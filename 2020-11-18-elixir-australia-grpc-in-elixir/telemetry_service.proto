@@ -1,0 +1,13 @@
+service OpenConfigTelemetry {
+  rpc telemetrySubscribe(SubscriptionRequest)
+    returns (stream OpenConfigData) {}
+
+  rpc cancelTelemetrySubscription(
+        CancelSubscriptionRequest)
+    returns (CancelSubscriptionReply) {}
+
+  rpc getTelemetrySubscriptions(
+        GetSubscriptionsRequest)
+    returns (GetSubscriptionsReply) {}
+  ...
+}

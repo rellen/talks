@@ -1,0 +1,10 @@
+*.aux
+*.fls
+*.log
+*.toc
+*markdown*
+*.fdb_latexmk
+**/svg-inkscape/**
+*.nav
+*.out
+*.snm

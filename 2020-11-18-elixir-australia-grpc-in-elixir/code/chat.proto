@@ -1,0 +1,106 @@
+syntax = "proto3";
+
+package chat;
+
+service Chatter {
+  rpc listRooms(ListRoomsRequest)
+    returns (ListRoomsResponse) {}
+   rpc createRoom(CreateRoomRequest)
+    returns (CreateRoomResponse) {}
+  rpc joinRoom(JoinRoomRequest)
+    returns (stream RoomData) {}
+  rpc leaveRoom(LeaveRoomRequest)
+    returns (LeaveRoomResponse) {}
+  rpc sendMessage(SendMessageRequest)
+    returns (SendMessageResponse) {}
+}
+
+message ListRoomsRequest {}
+
+message ListRoomsResponse {
+  repeated Room rooms = 1;
+}
+
+message Room {
+  string name = 1;
+  string description = 2;
+}
+
+message CreateRoomRequest {
+  string name = 1;
+  string description = 2;
+}
+
+message CreateRoomResponse {
+  oneof response {
+    CreateRoomSuccess success = 1;
+    Error error = 2;
+  }
+}
+
+message CreateRoomSuccess {
+}
+
+message JoinRoomRequest {
+  string room_name = 1;
+  string user_handle = 2;
+}
+
+message RoomData {
+  string room_name = 1;
+  oneof payload {
+    Error error = 2;
+    Update update = 3;
+  }
+}
+
+message Error {
+  ErrorCode code = 1;
+  string reason = 2;
+}
+
+enum ErrorCode {
+  INVALID_ROOM = 0;
+  ROOM_NAME_TAKEN = 1;
+}
+
+message Update {
+  repeated Post posts = 1;
+  repeated Member members = 2;
+}
+
+message Post {
+  uint64 timestamp_utc = 1;
+  oneof post {
+    UserPost user_post = 2;
+    RoomPost room_post = 3;
+  }
+}
+
+message UserPost {
+  string user_handle = 1;
+  string content = 2;
+}
+
+message RoomPost {
+  string content = 1;
+}
+
+message Member {
+  string handle = 1;
+}
+
+message LeaveRoomRequest {
+  string room_name = 1;
+  string user_handle = 2;
+}
+
+message LeaveRoomResponse {}
+
+message SendMessageRequest {
+  string room_name = 1;
+  string user_handle = 2;
+  string content = 3;
+}
+
+message SendMessageResponse {}

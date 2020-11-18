@@ -1,0 +1,276 @@
+\documentclass{beamer}
+\beamertemplatenavigationsymbolsempty 
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsmath}
+%% \usepackage{tikz}
+%% \usetikzlibrary{arrows,decorations.markings}
+
+%% \usepackage{diagbox}
+%% \usepackage{makecell}
+
+%% \usepackage{graphicx}
+\usepackage{svg}
+\usepackage[procnames]{listings}
+
+\usepackage{tex/latex-listings-protobuf/protobuf/lang}  % include language definition for protobuf
+\usepackage{tex/latex-listings-protobuf/protobuf/style} % include custom style for proto declarations. 
+
+\newcommand\lstproto[1]{%
+  \lstinputlisting[language=protobuf2, style=protobuf, basicstyle=\tiny\ttfamily, numberstyle=\tiny]{#1}
+}
+\newcommand\lstprotonn[1]{%
+  \lstinputlisting[language=protobuf2, style=protobuf, basicstyle=\tiny\ttfamily, numbers=none]{#1}
+}
+
+\lstdefinelanguage{elixir}{
+  morekeywords={case,catch,def,do,else,false,%
+    use,alias,receive,timeout,defmacro,defp,%
+    for,if,import,defmodule,defprotocol,%
+    nil,defmacrop,defoverridable,defimpl,%
+    super,fn,raise,true,try,end,with,%
+    unless},
+  otherkeywords={<-,->, |>, \%\{, \}, \{, \, (, )},
+  sensitive=true,
+  morecomment=[l]{\#},
+  morecomment=[n]{/*}{*/},
+  morecomment=[s][\color{purple}]{:}{\ },
+  morestring=[s][\color{orange}]"",
+  commentstyle=\color[rgb]{0,1,0},
+  keywordstyle=\color[rgb]{0,0,1},
+  stringstyle=\color{red},
+  procnamekeys={def,defp},
+  procnamestyle=\color[rgb]{0,0.5,0},
+  basicstyle=\ttfamily,
+	breaklines,
+	showstringspaces=false,
+	frame=tb
+}
+
+\newcommand\lstelixir[1]{%
+  \lstinputlisting[language=elixir, basicstyle=\large, numberstyle=\small]{#1}
+}
+
+%% \usepackage[default]{sourcecodepro}
+\usefonttheme{professionalfonts}
+
+\usepackage{sourcecodepro}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+%% Load the markdown package
+\usepackage[citations,footnotes,definitionLists,hashEnumerators,smartEllipses,tightLists=false,pipeTables,tableCaptions,hybrid]{markdown}
+%%begin novalidate
+\markdownSetup{
+  hybrid=true,
+  underscores=false,
+  rendererPrototypes={
+   link = {\href{#2}{#1}},
+   headingOne = {\section{#1}},
+   headingTwo = {\subsection{#1}},
+   headingThree = {\begin{frame}\frametitle{#1}},
+   headingFour = {\begin{block}{#1}},
+   horizontalRule = {\end{block}}
+}}
+%%end novalidate
+\usefonttheme{structurebold}
+
+\newcommand\blfootnote[1]{%
+  \begingroup
+  \renewcommand\thefootnote{}\footnote{#1}%
+  \addtocounter{footnote}{-1}%
+  \endgroup
+}
+
+\setbeamertemplate{footnote}{%
+  \parindent 0em\noindent%
+  \raggedleft%\raggedright
+  \usebeamercolor{footnote}\hbox to 0.8em{\hfil\insertfootnotemark}\insertfootnotetext\par%
+}
+
+%Information to be included in the title page:
+\title{gRPC in Elixir}
+\author{Robert Ellen\\@robertellen}
+\date{Elixir Australia - November 2020}
+
+
+\begin{document}
+
+\frame{\titlepage}
+
+\begin{markdown}{hybrid}
+%%begin novalidate
+
+# Abstract
+### Abstract
+
+  - gRPC is `A high-performance, open source universal RPC framework'
+  - inter-service communication
+  - `last mile' communications to devices and browsers
+  - any language: HTTP2, Protobuf
+  - option in the landscape occupied by e.g. ReST, GraphQL, busses, SNMP
+  - gRPC library for Elixir: Gun (client), Cowboy (server)  
+
+\end{frame}
+
+
+# Agenda
+### Agenda
+
+  - what is gRPC
+  - who's using it
+  - Elixr library (https://github.com/elixir-grpc/grpc)
+ and example application
+
+\end{frame}
+
+# What is gRPC?
+### What is gRPC
+
+RPC framework
+
+  - high performance
+    * HTTP/2 transport
+    * ProtoBuf for IDL and wire format 
+  - multi-language 
+
+\end{frame}
+
+### Diagram 
+
+\begin{center}
+  \includesvg[width=250px]{grpc}
+\end{center}
+
+\blfootnote{https://grpc.io/img/landing-2.svg}
+
+\end{frame}
+
+### HTTP/2 features
+
+  - binary data frames
+  - compression
+  - two-way streaming
+  - TCP-connection multiplexing
+
+\end{frame}
+
+### Protocol Buffers
+
+  - use as IDL provides a strong contract
+  - codec generation
+  - compact binary wire format
+
+\end{frame}
+
+### Protobuf messages
+
+  \lstprotonn{example.proto}
+
+  \blfootnote{https://grpc.io/docs/what-is-grpc/introduction/}
+
+\end{frame}
+
+### Protobuf IDL
+
+  \lstproto{service.proto}
+
+  \blfootnote{https://grpc.io/docs/what-is-grpc/introduction/}
+
+\end{frame}
+
+### RPC types 
+
+  \lstproto{service_methods.proto}
+
+  \blfootnote{https://grpc.io/docs/what-is-grpc/core-concepts/}
+
+\end{frame}
+
+### gRPC server
+
+  - gRPC library generates a codec from `.proto` to native data structures
+  - gRPC server must implement the services specified
+  - listen on a particular port for a `channel`
+  - service name and method name form a path
+    * $\rightarrow$ load balancing, routing, etc
+
+\end{frame}
+
+### gRPC client
+
+  - codec also generated for client
+  - plus stubs of the service methods
+  - client opens a channel to server
+  - client calls stub like any other function/method
+
+\end{frame}
+
+# Who's using it?
+### Who's using it?
+
+  - inter-service communication
+    * as an alternative to ReST, GraphQL, message busses, etc
+  - APIs
+    * Google
+    * Cloud-native, k8s, etc
+    * applications, e.g. Cockroach DB
+  - Model-driven Telemetry (to supersede SNMP)
+    * Cisco
+    * Juniper
+
+\end{frame}
+
+### Example: Juniper Telemetry Interface
+
+  \lstproto{telemetry_service.proto}
+
+  \blfootnote{https://github.com/juniper/jtimon/blob/master/telemetry/telemetry.proto}
+
+\end{frame}
+
+### Example: Async messaging 
+
+  \lstprotonn{async.proto}
+
+  \blfootnote{https://pl-rants.net/posts/async-over-grpc/}
+
+\end{frame}
+
+
+# Elixir gRPC library
+### Elixir gRPC library
+
+  - https://github.com/elixir-grpc/grpc
+  - client uses Gun
+    * https://github.com/ninenines/gun
+  - server uses Cowboy
+    * https://github.com/ninenines/cowboy
+  - separate protobuf library
+    * https://github.com/tony612/protobuf-elixir
+
+\end{frame}
+
+### Demo time!
+
+\end{frame}
+
+### References
+
+  - https://grpc.io/
+  - https://github.com/elixir-grpc/grpc/
+  - https://blog.appsignal.com/2020/03/24/how-to-use-grpc-in-elixir.html 
+  - https://pl-rants.net/posts/async-over-grpc/
+  - https://github.com/fullstorydev/grpcurl
+    
+\end{frame}
+
+
+### Questions 
+
+\end{frame}
+
+ 
+%%end novalidate
+\end{markdown}
+
+
+\end{document}

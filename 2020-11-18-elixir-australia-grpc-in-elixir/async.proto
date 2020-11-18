@@ -1,0 +1,31 @@
+service DataSink {
+  // Each message from the request stream will be a HTTP2 POST request
+  // for /DataSink/Send path
+  rpc Send(stream Request) return (stream Response);
+}
+
+// Request can have different payload types
+message Request {
+  uint32 version = 1;
+  bytes message_id = 2;
+  oneof payload {
+    bytes plain_message = 9;
+    bytes zstd_compressed = 10;
+  }
+}
+
+message Response {
+  uint32 version = 1;
+  oneof response {
+    AckMessage ack = 9;
+    ServiceMessage info = 10;
+  }
+}
+
+message AckMessage {
+  repeated bytes message_ids = 1;
+}
+
+message ServiceMessage {
+  // ...
+}
