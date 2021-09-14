@@ -1,0 +1,14 @@
+global:
+  scrape_interval:     15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: "metrics"
+    static_configs:
+    - targets: ["host.docker.internal:9568"]
+
+remote_write:
+- url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
+  basic_auth:
+    username: 204605
+    password_file: "./.grafana_remote_write.pwd" 
