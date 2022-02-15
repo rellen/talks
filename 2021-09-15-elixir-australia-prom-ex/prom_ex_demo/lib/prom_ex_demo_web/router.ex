@@ -23,6 +23,7 @@ defmodule PromExDemoWeb.Router do
   scope "/api", PromExDemoWeb do
     pipe_through :api
     resources "/todo", TodoController, except: [:new, :edit]
+    resources "/todu", ToduController, except: [:new, :edit]
   end
 
   # Other scopes may use custom stacks.

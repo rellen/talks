@@ -14,6 +14,7 @@ in pkgs.mkShell rec {
     elixir_ls
     nodejs
     postgresql_13
+    watch
    ] ++ optional stdenv.isLinux inotify-tools ++ optionals stdenv.isDarwin (with darwin.apple_sdk.frameworks; [ CoreFoundation CoreServices ]);
 
    shellHook = ''
