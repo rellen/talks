@@ -64,7 +64,7 @@ It's defined in Elixir data structures - *homoiconicity*
 
 ```elixir
 quote do
-  Enum.map(fn x -> x * 2 end)
+  Enum.map(xs, fn x -> x * 2 end)
 end
 ```
 
@@ -224,7 +224,7 @@ UnlessFun.fun_unless(true, do: IO.puts("this should never be printed"))
 
 ### Explanation:
 
-In Elixir function arguments are evaluated eagerly (i.e. before the function receiving the arguments us evaluated)
+In Elixir function arguments are evaluated eagerly (i.e. before the function receiving the arguments is evaluated)
 
 <!-- livebook:{"break_markdown":true} -->
 
@@ -233,14 +233,14 @@ So, let's try using a macro!
 ```elixir
 defmodule UnlessMacro1 do
   defmacro macro_unless(clause, do: expression) do
-    if(clause, do: expression)
+    if(!clause, do: expression)
   end
 end
 ```
 
 ```elixir
 require UnlessMacro1
-UnlessMacro1.macro_unless(true, do: IO.puts("this should never be printed"))
+UnlessMacro1.macro_unless(true == fal, do: IO.puts("this should never be printed"))
 ```
 
 OK, this still doesn't work, we are still evaluating the arguments before running the macro.
@@ -344,6 +344,9 @@ defmodule MyBoilerplateMacro1 do
     end)
   end
 end
+
+# def do_action(:action1), do: ...
+# def do_action(:action2), do: ...
 ```
 
 We've seen this before!  Let's use `unquote` to fix it.
@@ -573,7 +576,7 @@ defmodule MyBoilerplateMacro7 do
 
     yet_another =
       quote do
-        def yet_aother_fun(x, y), do: x + y
+        def yet_another_fun(x, y), do: x + y
       end
 
     [prelude, action_funs, yet_another]
@@ -642,7 +645,7 @@ Macros are great! But...
 
 ```mermaid
      flowchart TD
-     A[Start] --> B{Do you need macros?};
+     A[Start] --> B{Should you use macros in your code?};
      B --> C[No];
 ```
 
