@@ -225,3 +225,191 @@ In Elixir:
 
 * function arguments are evaluated eagerly (i.e. before the function receiving the arguments us evaluated)
 * **macro arguments are not evaluated, but received as quoted expressions**
+
+## Busting boilerplate - backfiring
+
+```elixir
+defmodule MyBoilerplateMacro1 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    Enum.each(actions, fn action ->
+      quote do
+        def do_action(action) do
+          IO.inspect(action)
+        end
+      end
+    end)
+  end
+end
+```
+
+We've seen this before!  Let's use `unquote` to fix it.
+
+```elixir
+defmodule MyBoilerplateMacro2 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    Enum.each(actions, fn action ->
+      quote do
+        def do_action(unquote(action)) do
+          IO.inspect(unquote(action))
+        end
+      end
+    end)
+
+    quote do: def(some_other_fun(x, y), do: x + y)
+  end
+end
+
+defmodule MyModule2 do
+  use MyBoilerplateMacro2
+end
+```
+
+Weird, looks like no `do_action` functions are exported, but `some_other_fun` is
+
+```elixir
+MyModule2.do_action(:action1)
+```
+
+Yep, they don't exist
+
+```elixir
+MyModule2.__info__(:functions)
+```
+
+Then we remember that `defmacro` needs to return quoted AST, and like functions, it will return the value last expression. Hence why `some_other_fun` made the cut, but not `do_action`.
+
+We can try putting all the code in one quote.
+
+```elixir
+defmodule MyBoilerplateMacro3 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    quote do
+      Enum.each(unquote(actions), fn action ->
+        def do_action(unquote(action)) do
+          IO.inspect(unquote(action))
+        end
+      end)
+
+      def some_other_fun(x, y), do: x + y
+    end
+  end
+end
+
+defmodule MyModule3 do
+  use MyBoilerplateMacro3
+end
+```
+
+```elixir
+defmodule MyBoilerplateMacro4 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    quote do
+      Enum.each(unquote(actions), fn action ->
+        def do_action(action) do
+          IO.inspect(action)
+        end
+      end)
+
+      def some_other_fun(x, y), do: x + y
+    end
+  end
+end
+
+defmodule MyModule4 do
+  use MyBoilerplateMacro4
+end
+```
+
+These warnings are saying that we got two `do_action` functions with the same argument (literally `action`).
+
+Many other permutations could be tried, and this could be a big time sink!
+
+After much hair-pulling...aha, a breakthrough! If `quote` returns a value, can we assign it to a variable and stitch them together?
+
+```elixir
+defmodule MyBoilerplateMacro5 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    action_funs =
+      Enum.map(actions, fn action ->
+        quote do
+          def do_action(unquote(action)) do
+            IO.inspect(unquote(action))
+          end
+        end
+      end)
+
+    some_other =
+      quote do
+        def some_other_fun(x, y), do: x + y
+      end
+
+    [action_funs, some_other]
+  end
+end
+
+defmodule MyBoilerplateMacro5 do
+  use MyMacroModule5
+end
+```
+
+```elixir
+MyModule5.do_action(:action1)
+MyModule5.do_action(:action2)
+```
+
+```elixir
+MyModule5.__info__(:functions)
+```
+
+```elixir
+Macro.to_string(quote do: (unquote_splicing([1, 2])))
+```
+
+```elixir
+defmodule MyBoilerplateMacro6 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    action_funs =
+      Enum.map(actions, fn action ->
+        quote do
+          def do_action(unquote(action)) do
+            IO.inspect(unquote(action))
+          end
+        end
+      end)
+
+    some_other =
+      quote do
+        def some_other_fun(x, y), do: x + y
+      end
+
+    quote do
+      [unquote_splicing(action_funs), unquote(some_other)]
+    end
+  end
+end
+
+defmodule MyModule6 do
+  use MyBoilerplateMacro6
+end
+```
+
+```elixir
+MyModule6.do_action(:action1)
+MyModule6.do_action(:action2)
+```
+
+```elixir
+MyModule2.__info__(:functions)
+```
