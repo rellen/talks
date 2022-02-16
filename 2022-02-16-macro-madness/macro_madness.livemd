@@ -1,0 +1,227 @@
+# Macro Madness: when busting boilerplate backfires
+
+## What are Macros?
+
+```elixir
+defmodule DefMacroExample1 do
+  defmacro add_one(x) do
+    x + 1
+  end
+end
+```
+
+```elixir
+require DefMacroExample1
+DefMacroExample1.add_one(2)
+```
+
+```elixir
+defmodule UsingExample do
+  defmacro __using__() do
+    def add_one(x), do: x + 1
+  end
+end
+```
+
+```elixir
+quote do
+  1 + 1
+end
+```
+
+```elixir
+quote do
+  def add_one(x), do: x + 1
+end
+```
+
+```elixir
+quote do
+  def add_one(x), do: x + 1
+end
+|> Macro.to_string()
+```
+
+```elixir
+defmodule UsingExample2 do
+  defmacro __using__(_opts) do
+    quote do
+      def add_one(x), do: x + 1
+    end
+  end
+end
+```
+
+```elixir
+defmodule UsingUsingExample2 do
+  use UsingExample2
+end
+
+UsingUsingExample2.add_one(5)
+```
+
+```elixir
+defmodule UsingExample3 do
+  defmacro __using__(_opts) do
+    quote do
+      def add_one(x), do: x + 1
+    end
+  end
+end
+```
+
+### Another example
+
+(from https://elixir-lang.org/getting-started/meta/macros.html)
+
+```elixir
+defmodule UnlessFun do
+  def fun_unless(clause, do: expression) do
+    if(!clause, do: expression)
+  end
+end
+```
+
+```elixir
+UnlessFun.fun_unless(true, do: IO.puts("this should never be printed"))
+```
+
+### Explanation:
+
+In Elixir function arguments are evaluated eagerly (i.e. before the function receiving the arguments us evaluated)
+
+<!-- livebook:{"break_markdown":true} -->
+
+So, let's try using a macro!
+
+```elixir
+defmodule UnlessMacro1 do
+  defmacro macro_unless(clause, do: expression) do
+    if(clause, do: expression)
+  end
+end
+```
+
+```elixir
+require UnlessMacro1
+UnlessMacro1.macro_unless(true, do: IO.puts("this should never be printed"))
+```
+
+OK, this still doesn't work, we are still evaluating the arguments before running the macro.
+
+But we have `quote`
+
+```elixir
+defmodule UnlessMacro2 do
+  defmacro macro_unless(clause, do: expression) do
+    quote do
+      if(!clause, do: expression)
+    end
+  end
+end
+```
+
+Warnings! Let's see if it works...
+
+```elixir
+require UnlessMacro2
+UnlessMacro2.macro_unless(true, do: IO.puts("this should never be printed"))
+```
+
+Oh noes!
+
+```elixir
+quote do
+  if(!clause, do: expression)
+end
+```
+
+We can't grab an outside variable with just `quote`
+
+```elixir
+x = 2
+Macro.to_string(quote do: 1 + x)
+```
+
+`clause` and `expression` are being considered literally as variable names for the `if` call, rather than as the AST of `clause` and `expression` arguments to our `defmacro`.
+
+What we really want is to grab the AST values held in `clause` and `expression`...
+
+### Enter `unquote`
+
+`unquote` accepts
+
+```elixir
+quote do
+  unquote({:+, [context: Elixir, import: Kernel], [1, 2]})
+end
+```
+
+```elixir
+quote do
+  unquote({:+, [context: Elixir, import: Kernel], [1, 2]})
+end
+|> Macro.to_string()
+```
+
+```elixir
+x = 1
+y = 2
+quote do: unquote(x) + unquote(y)
+```
+
+```elixir
+x = 1
+y = 2
+
+quote do
+  unquote(x) + unquote(y)
+end
+|> Macro.to_string()
+```
+
+Let's see the difference `unquote` makes when the variable is a quoted expression
+
+```elixir
+x = quote do: IO.puts("Hello, world!")
+
+quote do
+  x
+end
+```
+
+```elixir
+x = quote do: IO.puts("Hello, world!")
+
+quote do
+  unquote(x)
+end
+```
+
+So let's try `unquote` with arguments that are full expressions!
+
+```elixir
+defmodule UnlessMacro3 do
+  defmacro macro_unless(clause, do: expression) do
+    quote do
+      if(!unquote(clause), do: unquote(expression))
+    end
+  end
+end
+```
+
+```elixir
+require UnlessMacro3
+UnlessMacro3.macro_unless(true, do: IO.puts("this should never be printed"))
+```
+
+Happy days!
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Explanation:
+
+In Elixir:
+
+* function arguments are evaluated eagerly (i.e. before the function receiving the arguments us evaluated)
+* **macro arguments are not evaluated, but received as quoted expressions**
