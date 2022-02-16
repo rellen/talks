@@ -1,6 +1,27 @@
 # Macro Madness: when busting boilerplate backfires
 
-## What are Macros?
+## Intro
+
+https://twitter.com/robertellen
+
+https://github.com/rellen/talks/blob/main/2022-02-16-macro-madness/macro_madness.livemd
+
+## Macros?
+
+Macros are the meta-programing construct in Elixir, declared through the `defmacro`... err, macro
+
+<!-- livebook:{"force_markdown":true} -->
+
+```elixir
+  # kernel.ex
+  defmacro defmacro(call, expr \\ nil) do
+    define(:defmacro, call, expr, __CALLER__)
+  end
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+We can try out `defmacro`
 
 ```elixir
 defmodule DefMacroExample1 do
@@ -10,24 +31,149 @@ defmodule DefMacroExample1 do
 end
 ```
 
+For this example, it works...
+
 ```elixir
 require DefMacroExample1
 DefMacroExample1.add_one(2)
 ```
 
+But what if we pass an expression?
+
 ```elixir
-defmodule UsingExample do
-  defmacro __using__() do
-    def add_one(x), do: x + 1
-  end
-end
+# doesn't work
+require DefMacroExample1
+DefMacroExample1.add_one(1 + 1)
 ```
+
+Well, actually, macros are not really functions after all.
+
+Macros receive their arguments as quoted expressions, and return "quoted" expressions.
+
+So what is `quoting`?
 
 ```elixir
 quote do
   1 + 1
 end
 ```
+
+This is Elixir AST (Abstract Syntax Tree) representation for `1 + 1`
+
+It's defined in Elixir data structures - *homoiconicity*
+
+```elixir
+quote do
+  Enum.map(fn x -> x * 2 end)
+end
+```
+
+So we should use `quote` in our `defmacro`s
+
+```elixir
+defmodule DefMacroExample2 do
+  defmacro add_one(x) do
+    quote do
+      x + 1
+    end
+  end
+end
+```
+
+```elixir
+# doesn't work
+require DefMacroExample2
+
+DefMacroExample2.add_one(1 + 1)
+```
+
+```elixir
+quote do
+  x + 1
+end
+```
+
+`x` is not a quoted expression, it's a variable name that `quote` will faithfully use.
+
+<!-- livebook:{"break_markdown":true} -->
+
+### Enter `unquote`
+
+`unquote` accepts quoted expresions and expands them
+
+```elixir
+quote do
+  unquote({:+, [context: Elixir, import: Kernel], [1, 2]})
+end
+```
+
+We can see what code the macro would produce we can `Macro.to_string`
+
+```elixir
+quote do
+  unquote({:+, [context: Elixir, import: Kernel], [1, 2]})
+end
+|> Macro.to_string()
+```
+
+And we can now grab the values out of the environment
+
+```elixir
+x = 1
+y = 2
+quote do: unquote(x) + unquote(y)
+```
+
+```elixir
+x = 1
+y = 2
+
+quote do
+  unquote(x) + unquote(y)
+end
+|> Macro.to_string()
+```
+
+```elixir
+defmodule DefMacroExample3 do
+  defmacro add_one(x) do
+    quote do
+      unquote(x) + 1
+    end
+  end
+end
+```
+
+```elixir
+require DefMacroExample3
+
+DefMacroExample3.add_one(1 + 1)
+```
+
+## Boilerplate busting - Using Macros to define functions
+
+There is a special macro name, `__using__`, that can be defined in one module and used in another.
+
+```
+   def MyModule
+     use MyMacroModule
+     ....
+```
+
+<!-- livebook:{"break_markdown":true} -->
+
+We can't `def` directly in `defmacro`
+
+```elixir
+# doesn't work
+defmodule UsingExample1 do
+  defmacro __using__() do
+    def add_one(x), do: x + 1
+  end
+end
+```
+
+`quote` to the rescue!
 
 ```elixir
 quote do
@@ -42,6 +188,8 @@ end
 |> Macro.to_string()
 ```
 
+Putting it together...
+
 ```elixir
 defmodule UsingExample2 do
   defmacro __using__(_opts) do
@@ -50,9 +198,7 @@ defmodule UsingExample2 do
     end
   end
 end
-```
 
-```elixir
 defmodule UsingUsingExample2 do
   use UsingExample2
 end
@@ -60,19 +206,9 @@ end
 UsingUsingExample2.add_one(5)
 ```
 
-```elixir
-defmodule UsingExample3 do
-  defmacro __using__(_opts) do
-    quote do
-      def add_one(x), do: x + 1
-    end
-  end
-end
-```
+### How can we use this?
 
-### Another example
-
-(from https://elixir-lang.org/getting-started/meta/macros.html)
+(example from https://elixir-lang.org/getting-started/meta/macros.html)
 
 ```elixir
 defmodule UnlessFun do
@@ -109,7 +245,7 @@ UnlessMacro1.macro_unless(true, do: IO.puts("this should never be printed"))
 
 OK, this still doesn't work, we are still evaluating the arguments before running the macro.
 
-But we have `quote`
+But then remember that we have `quote`
 
 ```elixir
 defmodule UnlessMacro2 do
@@ -124,11 +260,12 @@ end
 Warnings! Let's see if it works...
 
 ```elixir
+# doesn't work
 require UnlessMacro2
 UnlessMacro2.macro_unless(true, do: IO.puts("this should never be printed"))
 ```
 
-Oh noes!
+Oh no, forgot the `unquote`, so `clause` and `expression` are being considered literally as variable names for the `if` call, rather than as the AST of `clause` and `expression` arguments to our `defmacro`.
 
 ```elixir
 quote do
@@ -143,42 +280,7 @@ x = 2
 Macro.to_string(quote do: 1 + x)
 ```
 
-`clause` and `expression` are being considered literally as variable names for the `if` call, rather than as the AST of `clause` and `expression` arguments to our `defmacro`.
-
 What we really want is to grab the AST values held in `clause` and `expression`...
-
-### Enter `unquote`
-
-`unquote` accepts
-
-```elixir
-quote do
-  unquote({:+, [context: Elixir, import: Kernel], [1, 2]})
-end
-```
-
-```elixir
-quote do
-  unquote({:+, [context: Elixir, import: Kernel], [1, 2]})
-end
-|> Macro.to_string()
-```
-
-```elixir
-x = 1
-y = 2
-quote do: unquote(x) + unquote(y)
-```
-
-```elixir
-x = 1
-y = 2
-
-quote do
-  unquote(x) + unquote(y)
-end
-|> Macro.to_string()
-```
 
 Let's see the difference `unquote` makes when the variable is a quoted expression
 
@@ -226,7 +328,7 @@ In Elixir:
 * function arguments are evaluated eagerly (i.e. before the function receiving the arguments us evaluated)
 * **macro arguments are not evaluated, but received as quoted expressions**
 
-## Busting boilerplate - backfiring
+## Busting boilerplate backfiring
 
 ```elixir
 defmodule MyBoilerplateMacro1 do
@@ -271,6 +373,7 @@ end
 Weird, looks like no `do_action` functions are exported, but `some_other_fun` is
 
 ```elixir
+# doesn't work
 MyModule2.do_action(:action1)
 ```
 
@@ -285,12 +388,13 @@ Then we remember that `defmacro` needs to return quoted AST, and like functions,
 We can try putting all the code in one quote.
 
 ```elixir
+# doesn't work
 defmodule MyBoilerplateMacro3 do
   defmacro __using__(_) do
     actions = [:action1, :action2]
 
     quote do
-      Enum.each(unquote(actions), fn action ->
+      Enum.map(unquote(actions), fn action ->
         def do_action(unquote(action)) do
           IO.inspect(unquote(action))
         end
@@ -306,13 +410,15 @@ defmodule MyModule3 do
 end
 ```
 
+Maybe we don't need the `unquote`s inside the loop
+
 ```elixir
 defmodule MyBoilerplateMacro4 do
   defmacro __using__(_) do
     actions = [:action1, :action2]
 
     quote do
-      Enum.each(unquote(actions), fn action ->
+      Enum.map(unquote(actions), fn action ->
         def do_action(action) do
           IO.inspect(action)
         end
@@ -357,8 +463,8 @@ defmodule MyBoilerplateMacro5 do
   end
 end
 
-defmodule MyBoilerplateMacro5 do
-  use MyMacroModule5
+defmodule MyModule5 do
+  use MyBoilerplateMacro5
 end
 ```
 
@@ -369,6 +475,34 @@ MyModule5.do_action(:action2)
 
 ```elixir
 MyModule5.__info__(:functions)
+```
+
+```elixir
+defmodule ListFuns do
+  [
+    def foo() do
+      :foo
+    end,
+    def bar() do
+      :bar
+    end
+  ]
+
+  def baz() do
+    :baz
+  end
+end
+```
+
+```elixir
+ListFuns.__info__(:functions)
+```
+
+```elixir
+ListFuns.foo() |> IO.inspect(label: "foo")
+ListFuns.bar() |> IO.inspect(label: "bar")
+ListFuns.baz() |> IO.inspect(label: "baz")
+:ok
 ```
 
 ```elixir
@@ -384,7 +518,7 @@ defmodule MyBoilerplateMacro6 do
       Enum.map(actions, fn action ->
         quote do
           def do_action(unquote(action)) do
-            IO.inspect(unquote(action))
+            IO.puts(unquote(action))
           end
         end
       end)
@@ -408,8 +542,108 @@ end
 ```elixir
 MyModule6.do_action(:action1)
 MyModule6.do_action(:action2)
+:ok
 ```
 
 ```elixir
-MyModule2.__info__(:functions)
+MyModule6.__info__(:functions)
 ```
+
+### Nesting `use`
+
+```elixir
+defmodule MyBoilerplateMacro7 do
+  defmacro __using__(_) do
+    prelude =
+      quote do
+        use MyBoilerplateMacro6
+      end
+
+    actions = [:action1, :action2]
+
+    action_funs =
+      Enum.map(actions, fn action ->
+        quote do
+          def do_action_nested(unquote(action)) do
+            IO.puts("nesting action")
+            do_action(unquote(action))
+          end
+        end
+      end)
+
+    yet_another =
+      quote do
+        def yet_aother_fun(x, y), do: x + y
+      end
+
+    [prelude, action_funs, yet_another]
+  end
+end
+
+defmodule MyModule7 do
+  use MyBoilerplateMacro7
+end
+```
+
+```elixir
+MyModule7.do_action_nested(:action1)
+MyModule7.do_action_nested(:action2)
+:ok
+```
+
+```elixir
+defmodule MyBoilerplateMacro8 do
+  defmacro __using__(_) do
+    actions = [:action1, :action2]
+
+    action_funs =
+      Enum.map(actions, fn action ->
+        quote do
+          def do_action(unquote(action)) do
+            IO.puts(unquote(action))
+          end
+        end
+      end)
+
+    some_other =
+      quote do
+        def some_other_fun(x, y), do: x + y
+      end
+
+    defaults =
+      quote do
+        def some_other_fun(x) do
+          IO.puts("Catch-all for some other fun")
+          some_other_fun(x, 1)
+        end
+
+        def do_action(action) do
+          IO.puts("Catch-all for #{inspect(action)}")
+        end
+      end
+
+    [action_funs, some_other, defaults]
+  end
+end
+
+defmodule MyModule8 do
+  use MyBoilerplateMacro8
+end
+```
+
+```elixir
+MyModule8.do_action(:action3)
+MyModule8.some_other_fun(5)
+```
+
+## Beware
+
+Macros are great! But...
+
+```mermaid
+     flowchart TD
+     A[Start] --> B{Do you need macros?};
+     B --> C[No];
+```
+
+https://github.com/rellen/talks/blob/main/2022-02-16-macro-madness/macro_madness.livemd
