@@ -1,1 +1,4 @@
 .env.local
+.direnv
+.nix-mix/
+.nix-hex/

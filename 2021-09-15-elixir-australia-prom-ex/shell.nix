@@ -5,7 +5,7 @@ let
     elixir = pkgs.beam.packages.erlangR24.elixir_1_12;
 
 in pkgs.mkShell rec {
-  name = "ssg-still";
+  name = "prom-ex-talk";
   buildInputs = with pkgs; [
     rebar
     rebar3
