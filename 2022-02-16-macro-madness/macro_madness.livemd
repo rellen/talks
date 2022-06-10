@@ -650,3 +650,14 @@ Macros are great! But...
 ```
 
 https://github.com/rellen/talks/blob/main/2022-02-16-macro-madness/macro_madness.livemd
+
+```elixir
+defmodule NakedUnquote do
+  xs = [1, 2, 3, 4]
+
+  Enum.each(xs, fn x ->
+    IO.inspect(x)
+    def foo(x, y), do: y * x
+  end)
+end
+```
