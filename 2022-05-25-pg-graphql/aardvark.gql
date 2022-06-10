@@ -1,0 +1,34 @@
+query aardvark {
+  accountCollection (filter: {email: {eq: "aardvark@x.com"}})  {
+    edges {
+      node {
+        id
+        email
+        blogCollection (filter: {id: {eq: 1}}) {
+          edges {
+            node {
+              id
+              name
+              description
+              blogPostCollection (first: 3, after: "WyIxNTIyZGNlZi1hY2NiLTQ4MTEtOThmNi0wOGZjNWNkMjYxMmMiXQ==") {
+                edges {
+                  cursor
+                  node {
+                    id
+                    title
+                    body
+                    status
+                    blog {
+                      id
+                    }
+                    createdAt
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } 
+  }
+}

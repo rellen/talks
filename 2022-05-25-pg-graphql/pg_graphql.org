@@ -1,0 +1,301 @@
+#+OPTIONS: ^:nil
+#+TITLE: GraphQL APIs for Postgres with pg_graphql
+
+*** Intro
+
+  - pg_graphql provides GraphQL APIs over a Postgres (14+) database
+  - interest in low-code / Backend-as-a-Service
+  - agenda:
+    - pg_graphql stand-alone
+    - over HTTP (demo)
+
+
+------
+
+*** ~pg_graphql~
+
+  - provides GraphQL APIs over a Postgres (14+) database
+  - a postgres extension
+    - reflect over tables and columns
+    - resolve GraphQL queries
+  - serves GraphQL over HTTP via PostgREST
+  - OSS: developed by and for Supabase
+
+------
+
+*** What is Supabase?
+
+  - an open-source Backend-as-a-Service
+  - built around Postgres
+  - frequently compared to Firebase
+  - also competes with hosted Postgres offerings
+  - self-host or cloud
+  - targeting JAM stack developers
+  - https://supabase.com
+
+  #+attr_html: :width 50%
+    [[./supabase-light.svg]]
+  
+
+------
+
+*** How do we use pg_graphql?
+
+  #+BEGIN_SRC
+graphqldb=# select id, email from account where email = 'cat@x.com';
+ id |   email   
+----+-----------
+  3 | cat@x.com
+  #+END_SRC
+  
+------
+
+*** How do we use it?
+
+  #+BEGIN_SRC
+graphqldb=# select graphql.resolve($$
+query accounts {
+  accountCollection (filter: {email: {eq: "cat@x.com"}}) {
+    edges {
+      node {
+        id
+        email
+      }
+    }
+  }
+}
+$$);
+
+resolve | {"data": {"accountCollection": {"edges": [{"node": {"id": 3, "email": "cat@x.com"}}]}}}
+  #+END_SRC
+  
+------
+
+*** How do we use it?
+
+#+BEGIN_SRC graphql
+query aardvark {
+  accountCollection (filter: {email: {eq: "aardvark@x.com"}})  {
+    edges {
+      node {
+        id
+        email
+        blogCollection (filter: {id: {eq: 1}}) {
+          edges {
+            node {
+              id
+              name
+              description
+              blogPostCollection (orderBy: {createdAt: AscNullsFirst}, first: 3, after: "WyIxNTIyZGNlZi1hY2NiLTQ4MTEtOThmNi0wOGZjNWNkMjYxMmMiXQ==") {
+                edges {
+                  cursor
+                  node {
+                    id
+                    title
+                    body
+                    status
+                    blog {
+                      id
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    } 
+  }
+}
+#+END_SRC
+
+------
+
+*** Reflection
+
+  #+attr_html: :width 75%
+[[./juan-davila-P8PlK2nGwqA-unsplash.jpg]]
+
+------
+
+*** Reflection
+  - table rows \rightarrow GraphQL types
+  - table columns, foreign keys \rightarrow GraphQL fields
+  - relations \rightarrow "connections" (Relay spec)
+    - pagination
+    - filtering
+    - sorting
+    
+------
+*** Relay spec Connections
+
+  #+attr_html: :width 75%
+   [[./clint-patterson-fwEwcQGkD1w-unsplash.jpg]]
+
+------   
+*** Relay spec Connections
+  - https://relay.dev/graphql/connections.htm#
+  - best practices for pagination
+  - spec for arguments and schema for
+    - slicing result sets
+    - pagination result sets
+    - cursors
+    - indicating more results available
+
+------
+
+*** Relay spec Connections
+  - Example: a user has an id, a name, and friends (other users)
+#+BEGIN_SRC graphql
+  {
+    user {
+      id
+      name
+      friends(first: 10, after: "opaqueCursor") {
+      ...
+      }
+    }
+  }
+#+END_SRC
+------
+
+*** Relay spec Connections
+#+BEGIN_SRC graphql
+  ...
+    friends(first: 10, after: "opaqueCursor") {
+      edges {
+        cursor
+        node {
+          id
+          name
+        }
+      }
+      pageInfo {
+        hasNextPage
+      }
+    }
+  ...
+#+END_SRC
+
+------
+
+*** Slice
+  - ~first: n~
+  - ~last: n~
+
+  - retrieve the first/last n results
+
+------
+
+*** Paginate
+  - ~after: cursor~
+  - ~before: cursor~
+
+  - retrieve results after/before cursor
+  - cursor is an opaque string (client doesn't know encoding)
+
+------
+
+*** Cursor field
+
+#+BEGIN_SRC graphql
+  ...
+      edges {
+        cursor
+        node {
+          id
+          name
+        }
+      }
+  ...
+#+END_SRC
+  - an opaque string representing the cursor value for the current node 
+
+------
+*** More results
+
+ - ~hasNextPage~ / ~hasPreviousPage~ fields
+ - booleans indicating if there are more results before/after the current page 
+
+#+BEGIN_SRC graphql
+  ...
+    friends(first: 10, after: "opaqueCursor") {
+      ...
+      pageInfo {
+        hasNextPage
+      }
+    }
+  ...
+#+END_SRC
+
+------
+
+*** Security
+
+  #+attr_html: :width 75%
+[[./towfiqu-barbhuiya-FnA5pAzqhMM-unsplash.jpg]]
+
+------
+
+*** Security
+
+  - Postgres security features
+    - Postgres authentication
+    - privileges
+    - row-level security for authorisation
+  
+------ 
+
+*** Row-level Security
+
+#+BEGIN_SRC sql
+create policy "Users can update their own accounts."
+  on account for update using (
+    current_user = id
+  );
+#+END_SRC
+
+------
+
+*** What about over HTTP?
+
+  #+attr_html: :width 75%
+[[./alan-j-hendry-KNt4zd8HPb0-unsplash.jpg]]
+
+------
+*** PostgREST
+
+  - a webserver that adds a RESTful API to Postgres
+  - GET, POST, DELETE, etc on tables
+  - leverages Postgres security and JWTs
+  - https://postgrest.org
+
+------
+*** PostgREST
+#+BEGIN_SRC
+curl "http://localhost:3000/account" -X GET          11.4m  Wed 25 May 17:01:14 2022
+[{"id":2,"email":"bat@x.com","encrypted_password":"asdfasdf","created_at":"2022-05-24T18:04:20.274252","updated_at":"2022-05-24T18:04:20.274252"}, 
+ {"id":3,"email":"cat@x.com","encrypted_password":"asdfasdf","created_at":"2022-05-24T18:04:20.274252","updated_at":"2022-05-24T18:04:20.274252"}, 
+ {"id":4,"email":"dog@x.com","encrypted_password":"asdfasdf","created_at":"2022-05-24T18:04:20.274252","updated_at":"2022-05-24T18:04:20.274252"}, 
+ {"id":5,"email":"elephant@x.com","encrypted_password":"asdfasdf","created_at":"2022-05-24T18:04:20.274252","updated_at":"2022-05-24T18:04:20.274252"}, 
+ {"id":1,"email":"aardvark@x.com","encrypted_password":"fdsafdsa","created_at":"2022-05-24T18:04:20.274252","updated_at":"2022-05-24T18:04:20.274252"}]⏎                                                           
+#+END_SRC
+
+------
+
+*** PostgREST
+
+  - provides an endpoint to call Postgres functions
+  - ~"/rpc/<function_name>~
+  - pg_graphql can leverage this to POST queries to ~graphql.resolve~
+  - elevates pg_graphql to something akin to Hasura
+
+------
+
+*** Demo of pg_graphql and PostgREST
+
+------
+
+*** Thanks
+
+  - @robertellen
