@@ -1,0 +1,57 @@
+#+TITLE: The Erlang Ecosystem for Functional Programmers (and everyone else, too)
+#+AUTHOR: Robert Ellen
+#+DATE: 2023/05/16
+
+* Brief history of Erlang 
+
+
+* The BEAM
+
+
+* OTP libraries
+
+** gen_server
+
+** Supervisors
+
+
+* The Erlang ecosystem
+
+
+* Elixir
+
+** Brief history of Elixir
+
+- created by José Valim starting in 2012
+- in search of a safer, faster, and more scalable Ruby
+- inspired by Erlang, Ruby, and, to a lesser extent, Lisp
+- José got the idea to use Erlang from Bruce Tate's /Seven Languages in Seven Weeks/
+
+** Features of Elixir
+
+- Ruby-like syntax while retaining most of Erlang's semantics
+- interoperate with Erlang
+- highly ergonomic build tool: ~mix~
+- modern package manager: ~hex~
+- opinionated formatter
+- drops SSA
+
+
+** Pipelines (|>)
+
+** with form
+
+
+* Property-Based Testing with PropEr
+
+** What is Property-Based Testing?
+
+
+* Success Typing with Dialyzer
+
+** What is Success Typing?
+
+
+* Gradual Typing with Gradualizer / Gradient
+
+** What is Gradual Typing?
