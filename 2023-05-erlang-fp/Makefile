@@ -1,18 +1,29 @@
 title = erlang-fp
+VERSION ?= all
 
-all: tex pdf
+all: elixir_tex bfpg_tex elixir_pdf bfpg_pdf
 
-tex: main.org
-	pandoc --standalone --slide-level=2 --to beamer -o $(title).tex main.org
+elixir_tex: elixir.org
+	pandoc --standalone --slide-level=2 --to beamer -o elixir.tex $<
 
-pdf: main.org
+bfpg_tex: bfpg.org
+	pandoc --standalone --slide-level=2 --to beamer -o bfpg.tex $<
+
+elixir_pdf: elixir.org
 	pandoc --standalone --slide-level=2 --to beamer \
 		--pdf-engine=xelatex \
 		-V 'mainfont:FiraSans-Regular.ttf' \
 		-V 'mainfontoptions:Path=../common/fonts/' \
-		-o $(title).pdf main.org
+		-o elixir_types_now.pdf $<
 
-watch: main.org
-	ls *.org | entr make all
+bfpg_pdf: bfpg.org
+	pandoc --standalone --slide-level=2 --to beamer \
+		--pdf-engine=xelatex \
+		-V 'mainfont:FiraSans-Regular.ttf' \
+		-V 'mainfontoptions:Path=../common/fonts/' \
+		-o bfpg.pdf $<
+
+watch: elixir.org bfpg.org
+	ls *.org | entr make $(VERSION)
 
 .PHONY: all

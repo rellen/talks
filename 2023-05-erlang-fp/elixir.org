@@ -1,0 +1,13 @@
+#+TITLE: Erlang Static Types Now!
+#+AUTHOR: Robert Ellen
+#+DATE: 2023/05/10
+
+
+#+INCLUDE: "./static-analysis.org"
+
+
+* Witchcraft and Algae
+
+
+* Elixir's static type system sneak-peak
+

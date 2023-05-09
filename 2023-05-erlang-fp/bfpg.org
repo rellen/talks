@@ -42,16 +42,13 @@
 ** with form
 
 
-* Property-Based Testing with PropEr
-
-** What is Property-Based Testing?
+#+INCLUDE: ./pbt.org
 
 
-* Success Typing with Dialyzer
+#+INCLUDE: ./static-analysis.org
 
-** What is Success Typing?
+* Witchcraft and Algae
 
 
-* Gradual Typing with Gradualizer / Gradient
+* Elixir's static type system sneak-peak
 
-** What is Gradual Typing?

@@ -1,0 +1,3 @@
+* Gradual Typing with Gradualizer / Gradient
+
+** What is Gradual Typing?
