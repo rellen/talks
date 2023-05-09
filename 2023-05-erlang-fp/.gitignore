@@ -1,2 +1,4 @@
 *.~undo-tree~
 .direnv/
+.nix-hex/
+.nix-mix/

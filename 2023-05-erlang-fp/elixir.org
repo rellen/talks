@@ -1,4 +1,4 @@
-#+TITLE: Erlang Static Types Now!
+#+TITLE: Elixir: Typed Functional Programming Now!
 #+AUTHOR: Robert Ellen
 #+DATE: 2023/05/10
 
@@ -10,4 +10,3 @@
 
 
 * Elixir's static type system sneak-peak
-

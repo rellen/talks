@@ -24,6 +24,6 @@ bfpg_pdf: bfpg.org
 		-o bfpg.pdf $<
 
 watch: elixir.org bfpg.org
-	ls *.org | entr make $(VERSION)
+	find . -type f \( -iname "*.org" -o -iname "*.ex" \) | entr make $(VERSION)
 
 .PHONY: all
