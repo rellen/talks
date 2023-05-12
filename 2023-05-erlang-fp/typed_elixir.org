@@ -1,0 +1,68 @@
+** Sneak-peak at the new Elixir Type System
+
+- PhD project to introduce a native type system
+  + Guillaume Duboc under the subervision of Giuseppe Castagna and José Valim
+  + Paris Cité University and French National Centre for Scientific Research
+- Semantic Subtyping aka Set-Theoretic types
+- research is currently underway
+  + draft research paper
+  + Elixir Conf EU talk
+  + demo playground on fly.io
+
+** Features
+
+- new syntax for type annotations with some reference to the =@spec= syntax
+- type variables
+- understands maps, protocols, guards, and pattern matching
+- gradual typing with a =dynamic()= type and ~strong arrows~
+
+
+** Syntax of a Set-Theoretic type annotation
+
+#+BEGIN_SRC elixir
+  negate :: (integer() -> integer())
+    and (boolean() -> boolean())
+  def negate(x) do ...
+#+END_SRC
+
+
+** Type variables
+
+#+BEGIN_SRC elixir
+    map :: ([a], (a -> b) -> [b] when a: term(), b: term())
+    def map([h | t], fun), do: [fun.(h) | map(t, fun)]
+    def map([], _fun), do: []
+
+    reduce :: ([a], b, (a, b -> b) -> b
+      when a: term(), b: term())
+    def reduce([h | t], acc, fun),
+      do: reduce(t, fun.(h, acc), fun)
+    def reduce([], acc, _fun), do: acc
+#+END_SRC
+
+** Protocols
+
+#+BEGIN_SRC elixir
+   Enumerable.t(a) and Collectible.t(a) # will be a thing
+#+END_SRC
+
+** Gradual typing and =dynamic()=
+
+- sometimes typechecker introduces =dynamic()= into the typing
+- there will be guarantees of soundness of the typing or a guarantee of a runtime type error using guards (e.g. =is_integer()=)
+
+** Thoughts
+
+- early days, but very exciting times
+- set operators =and= and =or= take some getting used to
+- the dynamic-typing aspect is a bit unclear (to me)
+- will be interesting to see what happens to dialyzer and gradient
+
+** Resources
+
+- https://www.irif.fr/users/gduboc/index
+- https://www.irif.fr/_media/users/gduboc/elixir-types.pdf
+- https://www.youtube.com/watch?v=gJJH7a2J9O8
+- https://typex.fly.dev/
+
+** Typex demo

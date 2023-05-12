@@ -1,12 +1,26 @@
-
 * Success Typing with Dialyzer
 
+** Dialyzer
+
+- DIscrepancy anALYZer for ERlang
+- static-analysis tool for Erlang, Elixir, and BEAM files
+- Success Typing - optimise for avoiding false-positives
+
 ** What is Success Typing?
+
+- technique to check programs for type inconsistencies
+- does not require the type annotations, but they help
+- only considers a program in error if it is certain there is an inconsistency
 
 ** Using Dialyzer in Elixir
 
 #+BEGIN_SRC elixir
-{:dialyxir, "~> 1.3", only: [:dev], runtime: false}
+  # mix.exs
+  {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
+#+END_SRC
+
+#+BEGIN_SRC sh
+  mix dialyzer # pass flags like --missing_return
 #+END_SRC
 
 ** Type example
@@ -42,25 +56,47 @@ from the success typing arguments:
 
 #+END_SRC
 
+** Type example - extra warning flags
+
+- =mix dialyzer --extra_return --missing_return=
+
+#+INCLUDE: "./dialyzer_example/lib/extended_example_a.ex" src elixir :lines 1
+
+** Type example - =extra_return=
+#+BEGIN_SRC
+lib/extended_example_a.ex:2:extra_range
+The type specification has too many types for the function.
+
+Function:
+DialyzerExample.ExtendedExample.extra_return/1
+
+Extra type:
+:zero
+
+Success typing:
+:even | :odd
+
+#+END_SRC
+
+** Type example - =missing_return=
+#+BEGIN_SRC
+lib/extended_example_a.ex:7:missing_range
+The type specification is missing types returned by function.
+
+Function:
+DialyzerExample.ExtendedExample.missing_return/1
+
+Type specification return types:
+:even | :odd
+
+Missing from spec:
+:zero
+
+#+END_SRC
+
 ** Match example - inexhaustive function clauses
 
 #+INCLUDE: "./dialyzer_example/lib/match_example_a.ex" src elixir :lines 1
-
-** Match example - run in =iex=
-#+BEGIN_SRC sh
-** (FunctionClauseError) no function clause matching in DialyzerExample.MatchExampleA.handle/1
-
-    The following arguments were given to DialyzerExample.MatchExampleA.handle/1:
-
-        # 1
-        {:bar, "bar"}
-
-    Attempted function clauses (showing 1 out of 1):
-
-        def handle({:foo, data})
-
-    lib/match_example_a.ex:8: DialyzerExample.MatchExampleA.handle/1
-#+END_SRC
 
 ** Match example - call unmatched function clause
 
@@ -85,6 +121,13 @@ from the success typing arguments:
 ________________________________________________________________________________
 #+END_SRC
 
-** Example 3 - non-exhaustive case
+** Case Example - non-exhaustive case
 
 #+INCLUDE: "./dialyzer_example/lib/case_example.ex" src elixir
+
+** Tips for using Dialyzer
+
+- start using at the beginning of a project
+- run the mix task to create Persistent Lookup Table files
+- cache PLTs for Erlang, Elixir, and deps in CI
+ + https://github.com/team-alembic/staple-actions/tree/main/actions/mix-dialyzer

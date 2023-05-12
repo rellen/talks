@@ -1,0 +1,74 @@
+* Witchcraft and Algae
+
+** Typeclasses with Witchcraft
+
+- https://github.com/witchcrafters/witchcraft
+- provides a typeclass hierarchy similar to Haskell, Scala, or FP-TS
+- respective operators such as map, apply, lifts, etc
+- tools to create typeclass instances for custom data types
+
+** Witchcraft Typeclass Hierarchy
+
+#+BEGIN_SRC
+Semigroupoid  Semigroup  Setoid   Foldable   Functor
+     ↓           ↓         ↓         ↓      ↓   ↓
+  Category     Monoid     Ord    Traversable  Apply
+     ↓                                       ↓     ↓
+   Arrow                            Applicative   Chain
+                                             ↓    ↓
+                                              Monad
+#+END_SRC
+
+
+** Algebraic Data Types with Algae
+
+- https://github.com/witchcrafters/algae
+- builds on top of Witchcraft to provide tools to create ADTs
+- ADTs: sum and product types
+  - sum type: Lists, Trees, Maybe / Option, Either
+  - product types: records, maps
+
+** Contrived example - TaskEither ADT
+
+#+BEGIN_SRC elixir
+defmodule TaskEither do
+  import Algae
+
+  defsum do
+    defdata(Left :: any())
+    defdata(Right :: any())
+  end
+end
+#+END_SRC
+
+** Contrived example - TaskEither typeclasses
+#+BEGIN_SRC elixir
+
+   definst Witchcraft.Functor, for: TaskEither.Left do
+     def map(left, _), do: left
+   end
+
+   definst Witchcraft.Functor, for: TaskEither.Right do
+     def map(%Right{right: data}, fun),
+      do: data |> fun.() |> Right.new()
+   end
+
+   # Apply, Applicative, Chain, Monad ...
+#+END_SRC
+
+** Contrived example - TaskEither execution
+#+BEGIN_SRC elixir
+  # >>>/2 is the bind function from Haskell's Monad typclass
+  > g = fn _t -> TaskEither.Left.new(fn -> :error end) end
+  #Function<42.3316493/1 in :erl_eval.expr/6>
+  > f = fn t -> TaskEither.Right.new(fn -> t.() end) end
+  #Function<42.3316493/1 in :erl_eval.expr/6>
+  > result = a >>> f >>> g
+  %TaskEither.Left{left: #Function<43.3316493/0 in :erl_eval.expr/6>}
+#+END_SRC
+
+** Thoughts on witchcraftery
+
+- not very active
+- straying from idomatic Elixir (e.g ={:ok, data()} | {:error, String.t()}=)
+- need to study typeclases, perhaps more of an intellectual curiosity

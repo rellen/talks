@@ -2,11 +2,34 @@
 #+AUTHOR: Robert Ellen
 #+DATE: 2023/05/10
 
+#+LATEX_HEADER: \let\oldverbatim\verbatim
+#+LATEX_HEADER: \let\oldendverbatim\endverbatim
+#+LATEX_HEADER: \renewenvironment{verbatim}{\scriptsize\oldverbatim}{\oldendverbatim}
+
+* Typed Functional Programming Now
+
+[[file:now.png]]
+
+** Types and Elixir
+
+- Elixir is dynamically-typed - who knew?
+- but a static type system is a much-missed feature for many FP enthusiasts
+- Elixir inherits the =@spec= type spec syntax
+  + several static analysis tools make use of this
+- recently, work has begun on a static type system for Elixir
+
+** Agenda
+
+- Static analysis tools
+  + Dialyzer
+  + Gradient
+- Type-adjacent libraries
+  + Typeclasses and Algebraic data-types with Witchcraft and Algae
+- sneak-peak at the new Set-Theoretic static type system for Elixir
+
 
 #+INCLUDE: "./static-analysis.org"
 
+#+INCLUDE: "./witchcraft.org"
 
-* Witchcraft and Algae
-
-
-* Elixir's static type system sneak-peak
+#+INCLUDE: "./typed_elixir.org"

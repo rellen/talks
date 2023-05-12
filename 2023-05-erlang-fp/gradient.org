@@ -1,3 +1,60 @@
 * Gradual Typing with Gradualizer / Gradient
 
 ** What is Gradual Typing?
+
+- a form of type system that combines static and dynamic types
+- a gradually-typed program annotates parts of its code with types
+- some of the program will then have known types, other parts will have a ~unknown~ type
+- a gradual type checker ensures parts of values with known types are consistent
+
+** Gradualizer
+
+- https://github.com/josefs/Gradualizer
+- gradual type checker for Erlang
+- relies on type specs
+- will only check where types are annotated and known
+- by default, does not infer types
+- much faster than Dialyzer and no PLTs!
+
+** Gradient - an Elixir front-end for Gradualizer
+
+#+BEGIN_SRC elixir
+   # mix.exs
+   {:gradient, github: "esl/gradient",
+     only: [:dev], runtime: false}
+#+END_SRC
+
+** Type example
+#+INCLUDE: "./gradient_example/lib/type_example.ex" src elixir :lines 1
+
+** Type example - output
+#+BEGIN_SRC
+lib/type_example.ex: The variable on line 8 is expected to have type number()
+but it has type binary()
+6
+7   @spec wat(number(), String.t()) :: number()
+8   def wat(a, b), do: a + b
+9
+10   def run_add, do: add(1, :two)
+
+lib/type_example.ex: The atom on line 10 is expected to have type number()
+but it has type :two
+8   def wat(a, b), do: a + b
+9
+10   def run_add, do: add(1, :two)
+11   def run_concat, do: concat(:not_a_string, "suffix")
+12 end
+
+#+END_SRC
+
+** Inference example - =mix gradient --infer=
+#+INCLUDE: "./gradient_example/lib/infer_example.ex" src elixir :lines 1
+
+
+** Infer example - output
+#+BEGIN_SRC
+lib/infer_example.ex: The operator '+' on line 3 is requires numeric arguments,
+but has arguments of type 1 and binary()
+
+Total errors: 1
+#+END_SRC
