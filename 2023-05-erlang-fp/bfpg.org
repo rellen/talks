@@ -2,18 +2,14 @@
 #+AUTHOR: Robert Ellen
 #+DATE: 2023/05/16
 
-* Brief history of Erlang 
+#+INCLUDE: "./headers.org"
 
 
-* The BEAM
+#+INCLUDE: "./erlang_ecosystem.org"
 
+#+INCLUDE: "./erlang_history.org"
 
-* OTP libraries
-
-** gen_server
-
-** Supervisors
-
+#+INCLUDE: "./beam_otp.org"
 
 * The Erlang ecosystem
 
@@ -44,11 +40,10 @@
 
 #+INCLUDE: ./pbt.org
 
-
 #+INCLUDE: ./static-analysis.org
 
-* Witchcraft and Algae
+#+INCLUDE: "./static-analysis.org"
 
+#+INCLUDE: "./witchcraft.org"
 
-* Elixir's static type system sneak-peak
-
+#+INCLUDE: "./typed_elixir.org"

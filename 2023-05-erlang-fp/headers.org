@@ -1,0 +1,7 @@
+#+LATEX_HEADER: \let\oldverbatim\verbatim
+#+LATEX_HEADER: \let\oldendverbatim\endverbatim
+#+LATEX_HEADER: \renewenvironment{verbatim}{\scriptsize\oldverbatim}{\oldendverbatim}
+
+# #+LATEX_HEADER: \usepackage{enumitem}
+#+LATEX_HEADER: \setbeamertemplate{itemize item}[scale=0.5]
+#+LATEX_HEADER: \setbeamertemplate{itemize subitem}[scale=0.5]

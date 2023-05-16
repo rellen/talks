@@ -15,8 +15,8 @@
 ** Using Dialyzer in Elixir
 
 #+BEGIN_SRC elixir
-  # mix.exs
-  {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
+    # mix.exs
+    {:dialyxir, "~> 1.3", only: [:dev], runtime: false}
 #+END_SRC
 
 #+BEGIN_SRC sh

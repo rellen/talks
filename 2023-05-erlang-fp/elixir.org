@@ -2,9 +2,8 @@
 #+AUTHOR: Robert Ellen
 #+DATE: 2023/05/10
 
-#+LATEX_HEADER: \let\oldverbatim\verbatim
-#+LATEX_HEADER: \let\oldendverbatim\endverbatim
-#+LATEX_HEADER: \renewenvironment{verbatim}{\scriptsize\oldverbatim}{\oldendverbatim}
+
+#+INCLUDE: "./headers.org"
 
 * Typed Functional Programming Now
 

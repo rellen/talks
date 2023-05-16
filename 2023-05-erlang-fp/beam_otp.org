@@ -1,0 +1,31 @@
+** The BEAM
+
+- Erlang's virtual machine / runtime system
+- lightweight processes, SMP
+- multi-generational, per-process garbage collector
+- asynchronous, location-transparent, message-passing IPC
+- hot-code-loading
+- new JIT compiler (BEAM bytecode to machine code)
+
+
+** The OTP libraries
+
+- Erlang's "standard library"
+- dozens of modules providing various typical stdlib stuff
+- core of which are for supervision trees
+
+** =gen_server=
+
+- generic server process
+- implements a behaviour with callbacks:
+  + initialisation
+  + handling calls (known synchronous messages)
+  + handling casts (known asynchronous messages)
+  + handling out-of-band messages (e.g. timers)
+  + graceful termination
+  + hot-code-loading
+
+** supervisor
+
+- responsible for starting, stopping, and monitoring child processes
+- /child specifications/ dictate how child processes are restarted if they crash, whether other processes are affected by a crash, and if the supervisor itself should shut down
