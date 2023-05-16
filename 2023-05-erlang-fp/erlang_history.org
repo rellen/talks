@@ -1,7 +1,7 @@
 ** Brief history of Erlang
 #+BEGIN_EXPORT latex
 \centering
-covered in my 2013 talk
+covered in my 2013 talk, but tonight...
 #+END_EXPORT
 
 ** Brief history of Erlang
@@ -20,6 +20,7 @@ covered in my 2013 talk
   + fault-tolerant
   + distributed
   + soft real-time
+- solved web-scale in the '80s
 
 #+BEGIN_EXPORT latex
 \begin{figure}

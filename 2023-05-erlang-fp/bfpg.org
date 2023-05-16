@@ -9,38 +9,13 @@
 
 #+INCLUDE: "./erlang_history.org"
 
+#+INCLUDE: "./taste_sip.org"
+
 #+INCLUDE: "./beam_otp.org"
 
 * The Erlang ecosystem
 
-
-* Elixir
-
-** Brief history of Elixir
-
-- created by José Valim starting in 2012
-- in search of a safer, faster, and more scalable Ruby
-- inspired by Erlang, Ruby, and, to a lesser extent, Lisp
-- José got the idea to use Erlang from Bruce Tate's /Seven Languages in Seven Weeks/
-
-** Features of Elixir
-
-- Ruby-like syntax while retaining most of Erlang's semantics
-- interoperate with Erlang
-- highly ergonomic build tool: ~mix~
-- modern package manager: ~hex~
-- opinionated formatter
-- drops SSA
-
-
-** Pipelines (|>)
-
-** with form
-
-
-#+INCLUDE: ./pbt.org
-
-#+INCLUDE: ./static-analysis.org
+#+INCLUDE: "./elixir_history_features.org"
 
 #+INCLUDE: "./static-analysis.org"
 

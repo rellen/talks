@@ -1,0 +1,61 @@
+* Elixir
+
+** Brief history of Elixir
+
+- created by José Valim starting in 2012
+- inspired by Erlang, Ruby, and, to a lesser extent, Lisp
+- like Erlang, the language is quite stable
+
+** Features of Elixir
+
+- Ruby-like syntax while retaining most of Erlang's semantics
+  + ..., immutable data, HoF, side-effects anywhere, dynamically-typed, ...
+- interoperate with Erlang
+- hygienic macros
+- highly ergonomic build tool: ~mix~
+- modern package manager: ~hex~
+- excellent unit test tool: exunit
+- opinionated formatter
+- drops SSA
+
+
+** Pipelines (|>)
+\small
+#+BEGIN_SRC elixir
+                  [10..20]
+                  |> Enum.random()
+                  |> Faker.Lorem.paragraphs()
+                  |> Enum.map(fn str -> String.replace(str, ~r/\p{P}/u, " ") end)
+                  |> Enum.map(fn str -> String.downcase(str) end)
+                  |> Enum.join()
+                  |> String.split()
+                  |> Enum.group_by(fn str -> str end)
+                  |> Enum.map(fn {str, strs} -> {str, Enum.count(strs)} end)
+                  |> Enum.sort_by(fn {_, count} -> count end, &>=/2)
+
+#+END_SRC
+
+** =with= special form
+
+\small
+#+BEGIN_SRC elixir
+
+  # instead of this
+  case get_client(creds) do
+    {:ok, client} -> case get_api_data(client) do
+                       {:ok, data} -> write_to_db(data)
+                       {:error, :api_error} -> ...
+                     end
+    {:error, :no_client} -> ...
+  end
+
+
+  # we can do this
+  with {:ok, client} <- get_client(creds),
+       {:ok, data} <- get_api_data(client) do
+    write_to_db(data)
+  else
+      {:error, :no_client} -> ...
+      {:error, :api_error} -> ...
+  end
+#+END_SRC
