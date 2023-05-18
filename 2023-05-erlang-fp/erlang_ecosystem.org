@@ -52,7 +52,7 @@ Libraries and frameworks include:
   \includegraphics[width=.8\linewidth]{./img/ecto_logo.png}
 \end{minipage}
 \begin{minipage}{.24\textwidth}
-  \centering
+\centering
   \includegraphics[width=.8\linewidth]{./img/absinthe_logo.png}
 \end{minipage}
 \begin{minipage}{.24\textwidth}
@@ -65,3 +65,14 @@ Libraries and frameworks include:
 \end{minipage}
 \end{figure}
 #+END_EXPORT
+
+
+** What is the Erlang Ecosystem?
+
+Built around a shared value in:
+
+- massive concurrency
+- fault-tolerance
+- simplicity
+- acknowledging the errors will occur so lets deal with them
+- but at the same time, "Let it crash"

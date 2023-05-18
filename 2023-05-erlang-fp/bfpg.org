@@ -4,6 +4,12 @@
 
 #+INCLUDE: "./headers.org"
 
+** Summary
+
+- it's been ten years since an Erlang talk at BFPG
+- this is another whirlwind tour
+- what makes the Erlang ecosystem awesome
+- some things to help everyone write better Erlang / Elixir
 
 #+INCLUDE: "./erlang_ecosystem.org"
 
@@ -13,8 +19,6 @@
 
 #+INCLUDE: "./beam_otp.org"
 
-* The Erlang ecosystem
-
 #+INCLUDE: "./elixir_history_features.org"
 
 #+INCLUDE: "./static-analysis.org"
@@ -22,3 +26,10 @@
 #+INCLUDE: "./witchcraft.org"
 
 #+INCLUDE: "./typed_elixir.org"
+
+
+** What did we not get to talk about?
+
+- Gleam
+- Purescript
+- Property-Based Testing

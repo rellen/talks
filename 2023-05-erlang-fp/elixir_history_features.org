@@ -1,4 +1,4 @@
-* Elixir
+** Elixir
 
 ** Brief history of Elixir
 
@@ -58,4 +58,33 @@
       {:error, :no_client} -> ...
       {:error, :api_error} -> ...
   end
+#+END_SRC
+
+** Protocols
+
+mechanism to achieve polymorphism over multiple data types.
+
+#+BEGIN_SRC elixir
+  # The Enum module can count maps and lists because they both
+  # implement the Enumerable protocol
+
+  %{:a => "a", :b => "b"} |> Enum.count
+  # 2
+  [1,2,3,4,5] |> Enum.count
+  # 5
+#+END_SRC
+
+** Typespecs
+
+(Erlang has these too)
+
+#+BEGIN_SRC elixir
+
+  @type foobar :: :foo | {:bar, term()}
+  @type my_map :: %{
+          :a => number(),
+          :b => binary(),
+          :c => foobar(),
+          optional(String.t()) => %SomeStruct{}
+        }
 #+END_SRC

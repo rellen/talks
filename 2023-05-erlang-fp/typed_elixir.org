@@ -1,7 +1,7 @@
 ** Sneak-peak at the new Elixir Type System
 
 - PhD project to introduce a native type system
-  + Guillaume Duboc under the subervision of Giuseppe Castagna and José Valim
+  + Guillaume Duboc under the supervision of Giuseppe Castagna and José Valim
   + Paris Cité University and French National Centre for Scientific Research
 - Semantic Subtyping aka Set-Theoretic types
 - research is currently underway

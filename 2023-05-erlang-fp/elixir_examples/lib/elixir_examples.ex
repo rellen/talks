@@ -16,6 +16,14 @@ defmodule ElixirExamples do
     :world
   end
 
+  @type foobar :: :foo | {:bar, term()}
+  @type my_map :: %{
+          :a => number(),
+          :b => binary(),
+          :c => foobar(),
+          optional(String.t()) => %SomeStruct{}
+        }
+
   # def with_example do
   #   case get_client(creds) do
   #     {:ok, client} ->
