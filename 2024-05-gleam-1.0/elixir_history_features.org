@@ -1,0 +1,20 @@
+** Elixir
+
+** Brief history of Elixir
+
+- created by José Valim starting in 2012
+- inspired by Erlang, Ruby, and, to a lesser extent, Lisp
+- like Erlang, the language is quite stable
+
+** Features of Elixir
+
+- Ruby-like syntax while retaining most of Erlang's semantics
+  + ..., immutable data, HoF, side-effects anywhere, dynamically-typed, ...
+- interoperate with Erlang
+- hygienic macros
+- highly ergonomic build tool: ~mix~
+- modern package manager: ~hex~
+- excellent unit test tool: exunit
+- opinionated formatter
+- drops strict SSA in favour of rebinding
+

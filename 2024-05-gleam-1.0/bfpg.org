@@ -1,0 +1,23 @@
+#+TITLE: Gleam v1
+#+AUTHOR: Robert Ellen
+#+DATE: 2024/05/14
+
+#+INCLUDE: "./headers.org"
+
+** Summary
+
+- it's been ten years since an Erlang talk at BFPG
+- this is another whirlwind tour
+- what makes the Erlang ecosystem awesome
+- some things to help everyone write better Erlang / Elixir
+
+#+INCLUDE: "./erlang_ecosystem.org"
+
+#+INCLUDE: "./erlang_history.org"
+
+#+INCLUDE: "./beam_otp.org"
+
+#+INCLUDE: "./elixir_history_features.org"
+
+** What did we not get to talk about?
+
