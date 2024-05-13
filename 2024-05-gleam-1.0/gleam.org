@@ -26,6 +26,7 @@ pub fn main() {
 - strongly-typed
 - strict semantics
 
+** Gleam
 
 #+BEGIN_SRC gleam
 import gleam/io
@@ -61,6 +62,14 @@ fn sum(xs) {
 pub fn main() {
   sum(["a", "b", "c"])
 }
+
+
+
+
+
+
+
+
 #+END_SRC
 
 ** Type-inference
@@ -76,7 +85,7 @@ pub fn main() {
   sum(["a", "b", "c"])
 }
 
-// Produces the error ...
+// Produces the compile-time error ...
 // 8 │   sum(["a", "b", "c"])
 //   │       ^^^^^^^^^^^^^^^
 // Expected type:
@@ -85,9 +94,7 @@ pub fn main() {
 //     List(String)
 #+END_SRC
 
-** Type aliases
-
-Not a new type
+** Type aliases...are not a new type
 
 #+BEGIN_SRC gleam
 import gleam/io
@@ -171,12 +178,35 @@ pub type Shape {
   Circle(radius: Float)
 }
 
-// something like this from Erlang/Elixir won't compile
+// something like this adapted from Erlang/Elixir won't compile
 pub fn area(Square(side: s)) {
    s *. s
 }
 
 pub fn area(Rectangle(length: l, width: w)) {
    l *. w
+}
+#+END_SRC
+
+
+** Type variables - parametric polymorphism but not HKT
+
+#+BEGIN_SRC gleam
+import gleam/io
+import gleam/string
+
+fn my_fold(collection: List(a), accumulator: b, reducer: fn(a, b) -> b) -> b {
+  case collection {
+    [] -> accumulator
+    [x, ..xs] -> { // expression block
+      let new_acc = reducer(x, accumulator)
+      my_fold(xs, new_acc, reducer)
+    }
+  }
+}
+
+pub fn main() {
+  io.debug(my_fold([1, 2, 3], "", fn(a, b) { string.inspect(a) <> b }))
+  // "321"
 }
 #+END_SRC
