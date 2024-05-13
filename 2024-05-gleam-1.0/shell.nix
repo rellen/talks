@@ -12,6 +12,7 @@ in pkgs.mkShell rec {
     texlab # lsp for tex
     rebar
     rebar3
+    erlang
     elixir
     elixir_ls
     gleam

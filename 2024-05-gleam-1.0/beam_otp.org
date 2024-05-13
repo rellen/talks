@@ -37,6 +37,6 @@
 
 #+BEGIN_EXPORT latex
   \begin{center}
-  \includegraphics[width=1.0\textwidth]{./img/tree.png}
+  \includegraphics[width=0.8\textwidth]{./img/tree.png}
   \end{center}
 #+END_EXPORT

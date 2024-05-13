@@ -17,7 +17,7 @@ Languages include:
 \end{minipage}
 \begin{minipage}{.24\textwidth}
   \centering
-  \includegraphics[width=.8\linewidth]{./img/gleam.png}
+  \includegraphics[width=.8\linewidth]{./img/lucy.png}
 \end{minipage}
 \begin{minipage}{.24\textwidth}
   \centering
@@ -57,7 +57,7 @@ Libraries and frameworks include:
 \end{minipage}
 \begin{minipage}{.24\textwidth}
   \centering
-  \includegraphics[width=.8\linewidth]{./img/nx_logo.png}
+  \includegraphics[width=.7\linewidth]{./img/nx_logo.png}
 \end{minipage}
 \begin{minipage}{.24\textwidth}
   \centering
@@ -75,4 +75,4 @@ Built around a shared value in:
 - fault-tolerance
 - simplicity
 - acknowledging the errors will occur so lets deal with them
-- but at the same time, "Let it crash"
+- but at the same time, ``Let it crash''

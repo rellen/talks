@@ -11,9 +11,16 @@
 
 % \renewenvironment{Shaded}{\begin{snugshade}\footnotesize}{\end{snugshade}}
 
-\setbeamertemplate{itemize item}{\ast}
+\setbeamertemplate{itemize item}{>}
 \setbeamertemplate{itemize subitem}{--}
 
-\setbeamerfont{itemize/enumerate body}{size=\Large}
-\setbeamerfont{itemize/enumerate subbody}{size=\Large}
-\setbeamerfont{itemize/enumerate subsubbody}{size=\large}
+\setbeamerfont{itemize/enumerate body}{size=\small}
+\setbeamerfont{itemize/enumerate subbody}{size=\small}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\small}
+
+\setbeamerfont{normal text}{size=\tiny}
+
+\usepackage{listings}
+\lstset{basicstyle=\tiny}
+
+\setbeamertemplate{footline}[page number]

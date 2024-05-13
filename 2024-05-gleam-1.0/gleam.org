@@ -1,0 +1,182 @@
+
+** Gleam
+
+#+BEGIN_EXPORT latex
+  \begin{center}
+  \includegraphics[width=.5\textwidth]{./img/lucy.png}
+  \end{center}
+#+END_EXPORT
+
+** Gleam
+
+#+BEGIN_SRC gleam
+// https://gleam.run
+import gleam/io
+
+pub fn main() {
+  io.println("hello, friend!")
+}
+#+END_SRC
+
+** Gleam
+
+- created by Louis Pilfold (https://github.com/lpil)
+- functional: immutable data and HoF, but impure
+- statically-typed: Hindley-Milner type system
+- strongly-typed
+- strict semantics
+
+
+#+BEGIN_SRC gleam
+import gleam/io
+import gleam/list
+
+fn sum(xs: List(Int)) -> Int {
+  list.fold(xs, 0, fn(acc, x) { acc + x })
+}
+
+pub fn main() {
+  io.debug(sum([1, 2, 3])) // prints "6"
+}
+#+END_SRC
+
+
+** Gleam
+
+- compiles to BEAM or JavaScript
+- FFI to JS and Erlang/Elixir - both at the same time with fallback
+- all tooling provided by ~gleam~
+- ~gleam~ is written in Rust
+
+
+** Type-inference
+
+#+BEGIN_SRC gleam
+import gleam/list
+
+fn sum(xs) {
+  list.fold(xs, 0, fn(acc, x) { acc + x })
+}
+
+pub fn main() {
+  sum(["a", "b", "c"])
+}
+#+END_SRC
+
+** Type-inference
+
+#+BEGIN_SRC gleam
+import gleam/list
+
+fn sum(xs) {
+  list.fold(xs, 0, fn(acc, x) { acc + x })
+}
+
+pub fn main() {
+  sum(["a", "b", "c"])
+}
+
+// Produces the error ...
+// 8 │   sum(["a", "b", "c"])
+//   │       ^^^^^^^^^^^^^^^
+// Expected type:
+//     List(Int)
+// Found type:
+//     List(String)
+#+END_SRC
+
+** Type aliases
+
+Not a new type
+
+#+BEGIN_SRC gleam
+import gleam/io
+
+pub type SpecialString = String
+
+pub fn main() {
+  let normal: String = "I'm a string"
+  let special: SpecialString = "I'm a special string"
+
+  io.debug(normal == special) // False
+}
+#+END_SRC
+
+** Opaque types with smart constructors
+
+#+BEGIN_SRC gleam
+import gleam/io
+
+pub opaque type OpaqueString {
+	OpaqueString(inner: String)
+}
+
+pub fn make(str: String) -> OpaqueString {
+  OpaqueString(str <> " (totally a string)")
+}
+
+pub fn main() {
+  let normal: String = "I'm a string"
+  let special: OpaqueString = make("I'm not a string")
+
+  io.debug(normal == special) // Compile error
+}
+#+END_SRC
+
+** Data types
+
+#+BEGIN_SRC gleam
+import gleam/io
+import gleam/string
+
+pub type Person {
+  Person(name: String, age: Int)
+}
+
+pub fn main() {
+  let ashley = Person("Ashley", 42)
+  let message =
+    ashley.name <> " is " <> string.inspect(ashley.age) <> " years old"
+  io.println(message)
+  // "Ashley is 42 years old"
+}
+#+END_SRC
+
+
+** Data types
+
+#+BEGIN_SRC gleam
+pub type Shape {
+  Square(side: Float)
+  Rectangle(length: Float, width: Float)
+  Circle(radius: Float)
+}
+
+pub fn area(shape: Shape) -> Float {
+  case shape {
+    // note the *. operator
+    Square(side: s) -> s *. s
+    Rectangle(length: l, width: w) -> l *. w
+    Circle(radius: r) -> 3.14 *. r *. r
+  }
+}
+#+END_SRC
+
+** Data types - no pattern matching in function head
+
+#+BEGIN_SRC gleam
+pub type Shape {
+  Square(side: Float)
+  Rectangle(length: Float, width: Float)
+  Circle(radius: Float)
+}
+
+// something like this from Erlang/Elixir won't compile
+pub fn area(Square(side: s)) {
+   s *. s
+}
+
+pub fn area(Rectangle(length: l, width: w)) {
+   l *. w
+}
+#+END_SRC

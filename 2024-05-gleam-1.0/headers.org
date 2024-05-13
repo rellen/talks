@@ -1,0 +1,8 @@
+#+LATEX_HEADER: \let\oldverbatim\verbatim
+#+LATEX_HEADER: \let\oldendverbatim\endverbatim
+
+# #+LATEX_HEADER: \usepackage{enumitem}
+#+LATEX_HEADER: \setbeamertemplate{itemize item}[scale=0.5]
+#+LATEX_HEADER: \setbeamertemplate{itemize subitem}[scale=0.5]
+
+#+LATEX_CLASS_OPTIONS: [aspectratio=169]

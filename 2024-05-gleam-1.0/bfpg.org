@@ -6,10 +6,15 @@
 
 ** Summary
 
-- it's been ten years since an Erlang talk at BFPG
-- this is another whirlwind tour
-- what makes the Erlang ecosystem awesome
-- some things to help everyone write better Erlang / Elixir
+** Gleam
+
+#+BEGIN_EXPORT latex
+\textit{ Gleam is a friendly language for building type-safe systems that scale! }
+
+\hfill https://gleam.run
+
+A functional programming language in the Erlang/BEAM ecosystem with a static type-system designed for simplicity and ergonomics.
+#+END_EXPORT
 
 #+INCLUDE: "./erlang_ecosystem.org"
 
@@ -18,6 +23,8 @@
 #+INCLUDE: "./beam_otp.org"
 
 #+INCLUDE: "./elixir_history_features.org"
+
+#+INCLUDE: "./gleam.org"
 
 ** What did we not get to talk about?
 
