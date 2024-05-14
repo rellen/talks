@@ -210,3 +210,150 @@ pub fn main() {
   // "321"
 }
 #+END_SRC
+
+** ~Nil~ - the unit type
+
+#+BEGIN_SRC gleam
+// gleam_stdlib/src/gleam/io.gleam
+...
+pub fn println(string: String) -> Nil {
+  do_println(string)
+}
+
+@external(erlang, "gleam_stdlib", "println")
+@external(javascript, "../gleam_stdlib.mjs", "console_log")
+fn do_println(string string: String) -> Nil
+...
+#+END_SRC
+
+** ~todo~ - ``top" type
+
+#+BEGIN_SRC gleam
+import gleam/io
+
+// prints "one" then errors at two()
+pub fn main() {
+  one()
+  two()
+  three()
+}
+
+pub fn one() {
+  io.println("one")
+}
+
+pub fn two() {
+  todo as "two() is not implemented yet!"
+}
+
+pub fn three() {
+  todo as "three() is not implemented yet!"
+}
+#+END_SRC
+
+** ~use~ - a monad if you squint
+
+#+BEGIN_SRC gleam
+import gleam/io
+import gleam/result
+import gleam/string
+
+pub fn main() {
+  let res = {
+    use data <- result.try(read_data())
+    use record <- result.map(find_record(data))
+    format(record)
+  }
+
+  case res {
+    Ok(formatted) -> io.println(formatted)
+    Error(error) -> io.println("ERROR: " <> error)
+  }
+}
+
+fn read_data() {
+  Ok(#("Ashley", 42))
+  Error("couldn't read data")
+}
+
+fn find_record(record) {
+  Ok(record)
+  Error("not found")
+}
+
+fn format(record) {
+  string.inspect(record)
+}
+#+END_SRC
+
+** ~use~ - a monad if you squint
+
+#+BEGIN_SRC gleam
+fn read_data() {
+  Ok(#("Ashley", 42))
+}
+
+fn find_record(record) {
+  Ok(record)
+}
+#+END_SRC
+
+** ~use~ - a monad if you squint
+
+#+BEGIN_SRC gleam
+import gleam/io
+import gleam/result
+import gleam/string
+
+// prints "#("Ashley", 42)"
+pub fn main() {
+  let res = {
+    use data <- result.try(read_data())
+    use record <- result.map(find_record(data))
+    format(record)
+  }
+
+  case res {
+    Ok(formatted) -> io.println(formatted)
+    Error(error) -> io.println("ERROR: " <> error)
+  }
+}
+#+END_SRC
+
+** ~use~ - a monad if you squint
+
+#+BEGIN_SRC gleam
+fn read_data() {
+  Error("couldn't read data")
+}
+
+fn find_record(record) {
+  Error("not found")
+}
+
+fn format(record) {
+  string.inspect(record)
+}
+#+END_SRC
+
+** ~use~ - a monad if you squint
+
+#+BEGIN_SRC gleam
+import gleam/io
+import gleam/result
+import gleam/string
+
+// prints "ERROR: couldn't read data"
+pub fn main() {
+  let res = {
+    use data <- result.try(read_data())
+    use record <- result.map(find_record(data))
+    format(record)
+  }
+
+  case res {
+    Ok(formatted) -> io.println(formatted)
+    Error(error) -> io.println("ERROR: " <> error)
+  }
+}
+#+END_SRC

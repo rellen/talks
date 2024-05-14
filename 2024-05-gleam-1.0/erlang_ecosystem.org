@@ -56,6 +56,10 @@ Libraries and frameworks include:
   \includegraphics[width=.8\linewidth]{./img/absinthe_logo.png}
 \end{minipage}
 \begin{minipage}{.24\textwidth}
+\centering
+  \includegraphics[width=.8\linewidth]{./img/oban-logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
   \centering
   \includegraphics[width=.7\linewidth]{./img/nx_logo.png}
 \end{minipage}
@@ -75,4 +79,4 @@ Built around a shared value in:
 - fault-tolerance
 - simplicity
 - acknowledging the errors will occur so lets deal with them
-- but at the same time, ``Let it crash''
+- but at the same time, ``Let it crash"
