@@ -1,6 +1,7 @@
 
 ** Gleam
 
+
 #+BEGIN_EXPORT latex
   \begin{center}
   \includegraphics[width=.5\textwidth]{./img/lucy.png}
@@ -46,8 +47,20 @@ pub fn main() {
 
 - compiles to BEAM or JavaScript
 - FFI to JS and Erlang/Elixir - both at the same time with fallback
+  - TS type annotations
+  - can't call Elixir macros - need to wrap
 - all tooling provided by ~gleam~
 - ~gleam~ is written in Rust
+- went v1.0 in March 2024
+
+
+** Gleam philosophy
+
+``Gleam has no null, no implicit conversions, no exceptions, and always performs full type checking. If the code compiles you can be reasonably confident it does not have any inconsistencies that may cause bugs or crashes."
+
+``Gleam lacks exceptions, macros, type classes, early returns, and a variety of other features, instead going all-in with just first-class-functions and pattern matching."
+
+(https://gleam.run)
 
 
 ** Type-inference
@@ -357,3 +370,28 @@ pub fn main() {
   }
 }
 #+END_SRC
+
+** Some gleam libraries - no magic
+
+- Lustre: Elm-inspired frontend framework
+  - https://github.com/lustre-labs/lustre
+- cgi: CGI in gleam
+  - https://github.com/lpil/cgi
+- wisp: web framework
+  - https://github.com/gleam-wisp/wisp
+
+
+** OTP
+
+Gleam being statically-typed does not wrap OTP's concurrency entities wholesale like Elixir.
+Instead providing an OTP-interoperable library built using basic BEAM primatives.
+
+- https://github.com/gleam-lang/otp
+- Actor hierarchy
+  - Process - a wrapper around BEAM processes, all other actors based on process
+  - Actor - like a ~gen_server~, receives messages, updates state
+  - Task - run a function and quit
+  - Supervisor - manage other processes, provides fault-tolerance
+
+
+
