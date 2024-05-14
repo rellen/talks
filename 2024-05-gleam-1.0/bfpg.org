@@ -6,6 +6,14 @@
 
 ** Summary
 
+- Gleam is a statically-typed, functional programming language for the Erlang/BEAM and JavaScript ecosystems.
+- It just went 1.0 in March 2024, and is considered stable for industrial use.
+- Gleam makes some interesting language design choices, opting for simplicity and ergonomics.
+- It's further removed from it's Erlang roots more than other popular BEAM languages such as Elixir.
+- Gleam is simple without being patronising, and seems like a great choice for building small services where you want to roll up your sleeves and build things from scratch
+
+
+
 ** Gleam
 
 #+BEGIN_EXPORT latex
@@ -14,6 +22,7 @@
 \hfill https://gleam.run
 
 A functional programming language in the Erlang/BEAM ecosystem with a static type-system designed for simplicity and ergonomics.
+Oh, and it happens to also target JavaScript.
 #+END_EXPORT
 
 #+INCLUDE: "./erlang_ecosystem.org"
@@ -26,5 +35,6 @@ A functional programming language in the Erlang/BEAM ecosystem with a static typ
 
 #+INCLUDE: "./gleam.org"
 
-** What did we not get to talk about?
+** Thank you
 
+I'll post slides soon.

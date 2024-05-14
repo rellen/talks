@@ -1,7 +1,6 @@
 
 ** Gleam
 
-
 #+BEGIN_EXPORT latex
   \begin{center}
   \includegraphics[width=.5\textwidth]{./img/lucy.png}
@@ -52,6 +51,8 @@ pub fn main() {
 - all tooling provided by ~gleam~
 - ~gleam~ is written in Rust
 - went v1.0 in March 2024
+- has a fantatic interactive language tour
+  - https://tour.gleam.run/
 
 
 ** Gleam philosophy
@@ -381,7 +382,7 @@ pub fn main() {
   - https://github.com/gleam-wisp/wisp
 
 
-** OTP
+** OTP concurrency
 
 Gleam being statically-typed does not wrap OTP's concurrency entities wholesale like Elixir.
 Instead providing an OTP-interoperable library built using basic BEAM primatives.
@@ -394,4 +395,18 @@ Instead providing an OTP-interoperable library built using basic BEAM primatives
   - Supervisor - manage other processes, provides fault-tolerance
 
 
+** OTP and BEAM ecosystem
+
+- there are several other libraries that wrap OTP features, like ETS
+- if something from the OTP libaries can be made type-safe, it's an FFI away
+
+** Where to use Gleam
+
+- Gleam is simple without being patronising, no magic
+- seems like a great choice for building small services 
+- you'll have to roll up your sleeves and build more things from scratch
+
+- small-to-medium web apps with less CRUD
+- isomorphic apps (share common types across FE and BE packages)
+- learning static-typing, polymorphism, immutable data structures
 
