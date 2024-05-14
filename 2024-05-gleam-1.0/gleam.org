@@ -372,6 +372,10 @@ pub fn main() {
 }
 #+END_SRC
 
+** No type classes, traits, or interfaces
+
+https://mckayla.blog/posts/all-you-need-is-data-and-functions.html
+
 ** Some gleam libraries - no magic
 
 - Lustre: Elm-inspired frontend framework
