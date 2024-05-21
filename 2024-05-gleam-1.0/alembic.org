@@ -23,14 +23,6 @@ A functional programming language in the Erlang/BEAM ecosystem with a static typ
 Oh, and it happens to also target JavaScript.
 #+END_EXPORT
 
-#+INCLUDE: "./erlang_ecosystem.org"
-
-#+INCLUDE: "./erlang_history.org"
-
-#+INCLUDE: "./beam_otp.org"
-
-#+INCLUDE: "./elixir_history_features.org"
-
 #+INCLUDE: "./gleam.org"
 
 ** Thank you
