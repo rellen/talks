@@ -9,6 +9,42 @@ Node.self() |> IO.inspect(label: "Node")
 :ok
 ```
 
+## Type modelling
+
+```elixir
+defmodule ModelledTypes do
+  def match1() do
+    name = "Ashley"
+    age = 42
+    ^name = age
+  end
+
+  def match2() do
+    ashley = "Ashley"
+    brooklyn = "Brooklyn"
+    ^ashley = brooklyn
+  end
+
+  def match3({dislike, value}) do
+    likes = ["programming language theory", "cat memes"]
+    dislikes = %{dislike => value, dynamic_typing: true, pineapple_on_pizza: 200 / 2}
+    ^likes = dislikes
+  end
+  
+  def match4() do
+    ashley_dob = %Date{} = ~D[1982-07-24]
+    brooklyn_dob = %DateTime{} = ~U[1982-07-24 10:00:00Z]
+    ^ashley_dob = brooklyn_dob
+  end
+
+  def match5() do
+    brooklyn = {"Brooklyn", 42.0}
+    increase_age = fn {name, age} -> {name, age + 0.1} end
+    ^brooklyn = increase_age
+  end
+end
+```
+
 ```elixir
 defmodule MapKeys1 do
   def missing_key1() do
@@ -39,57 +75,64 @@ end
 ```
 
 ```elixir
-defmodule StructKeys1 do
+defmodule Person do
+  
   defstruct [:first_name, :age]
   
   @type t :: %__MODULE__{first_name: String.t(), age: integer()}
+
+  def build_person(first_name, age) do
+    %Person{first_name: first_name, age: age}
+  end
+end
+```
+
+```elixir
+defmodule StructKeys1 do
   
   def missing_key() do
-    ashley = %StructKeys1{first_name: "Ashley", age: 42}
+    ashley = %Person{first_name: "Ashley", age: 42}
     ashley.last_name
     :ok
   end
   
   def missing_key2() do
-    ashley = %StructKeys1{}
+    ashley = %Person{}
     ashley.last_name
     :ok
-  end
-
-  def build_person(first_name, age) do
-    %StructKeys1{first_name: first_name, age: age}
   end
 end
 ```
 
 ```elixir
 defmodule StructKeys2 do  
+  
   def different_field_types() do
-    ashley = %StructKeys1{first_name: :ashley, age: "42"}
+    ashley = %Person{first_name: :ashley, age: "42"}
     ashley.last_name
     :ok
   end
 
-  @spec struct_arg1(StructKeys1.t()) :: :ok
+  @spec struct_arg1(Person.t()) :: :ok
   def struct_arg1(person) do
     person.last_name
     :ok
   end
 
-  def struct_arg2(%StructKeys1{} = person) do
+  def struct_arg2(%Person{} = person) do
     person.last_name
     :ok
   end
 
   def no_inference() do
-    # build_person => %StructKeys1{first_name: first_name, age: age}
-    person = StructKeys1.build_person("Ashley", 42)
+    # build_person => %Person{first_name: first_name, age: age}
+    person = Person.build_person("Ashley", 42)
     person.last_name
     :ok
   end
   
   def no_inference2() do
-    person = %StructKeys1{} = StructKeys1.build_person("Ashley", 42)
+    person = %Person{} = Person.build_person("Ashley", 42)
     person.last_name
     :ok
   end
@@ -97,7 +140,7 @@ defmodule StructKeys2 do
   def not_a_person(), do: :not_a_person
 
   def no_inference3() do
-    person = %StructKeys1{} = not_a_person()
+    person = %Person{} = not_a_person()
     person.first_name
     :ok
   end
@@ -122,15 +165,63 @@ defmodule Functions do
   end
 
   def bad_call_on_module() do
-    mod = StructKeys1
+    mod = Person
     mod.bad("Ashley", 42)
   end
 
   def bad_call_on_module2() do
-    mod = String.to_atom("StructKeys1")
+    mod = String.to_atom("Person")
     mod.bad("Ashley", 42)
   end
 
   
 end
+```
+
+## Structural Comparisons
+
+```elixir
+defmodule StructuralComparisons do
+  def compare_ages() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    brooklyn = %Person{first_name: "Brooklyn", age: "42"}
+    IO.inspect(ashley.age > brooklyn.age, label: "greater than?")
+    IO.inspect(ashley.age == brooklyn.age, label: "equal?")
+    IO.inspect(ashley.age === brooklyn.age, label: "triple equal?")
+    :ok
+  end
+
+  def compare_ages2() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    brooklyn = %Person{first_name: "Brooklyn", age: 42.0}
+    IO.inspect(ashley.age > brooklyn.age, label: "greater than?")
+    IO.inspect(ashley.age == brooklyn.age, label: "equal?")
+    IO.inspect(ashley.age === brooklyn.age, label: "triple equal?")
+    :ok
+  end
+
+  def compare_structs() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_too = %Person{first_name: "Ashley", age: 42}
+    IO.inspect(ashley > ashley_too, label: "greater than?")
+    IO.inspect(ashley == ashley_too, label: "equal?")
+    IO.inspect(ashley === ashley_too, label: "triple equal?")
+  end
+  
+  def compare_structs() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_too = %{first_name: "Ashley", age: 42}
+    IO.inspect(ashley > ashley_too, label: "greater than?")
+    IO.inspect(ashley == ashley_too, label: "equal?")
+    IO.inspect(ashley === ashley_too, label: "triple equal?")
+  end
+end
+```
+
+```elixir
+StructuralComparisons.compare_ages()
+```
+
+```elixir
+StructuralComparisons.compare_ages2()
 ```
