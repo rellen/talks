@@ -1,0 +1,136 @@
+# Elixir 1.17 Type Checker
+
+## Section
+
+```elixir
+System.version() |> IO.inspect(label: "Elixir")
+:erlang.system_info(:otp_release) |> IO.chardata_to_string() |> IO.inspect(label: "OTP")
+Node.self() |> IO.inspect(label: "Node")
+:ok
+```
+
+```elixir
+defmodule MapKeys1 do
+  def missing_key1() do
+    ashley = %{first_name: "Ashley", age: 42}
+    %{last_name: last_name} = ashley
+    :ok
+  end
+end
+```
+
+```elixir
+defmodule MapKeys2 do
+  def missing_key2() do
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley.last_name
+    :ok
+  end
+end
+```
+
+```elixir
+defmodule MapKeys3 do
+  def maybe_missing_key(%{first_name: _first_name, age: _age} = params) do
+    params.last_name
+    :ok
+  end
+end
+```
+
+```elixir
+defmodule StructKeys1 do
+  defstruct [:first_name, :age]
+  
+  @type t :: %__MODULE__{first_name: String.t(), age: integer()}
+  
+  def missing_key() do
+    ashley = %StructKeys1{first_name: "Ashley", age: 42}
+    ashley.last_name
+    :ok
+  end
+  
+  def missing_key2() do
+    ashley = %StructKeys1{}
+    ashley.last_name
+    :ok
+  end
+
+  def build_person(first_name, age) do
+    %StructKeys1{first_name: first_name, age: age}
+  end
+end
+```
+
+```elixir
+defmodule StructKeys2 do  
+  def different_field_types() do
+    ashley = %StructKeys1{first_name: :ashley, age: "42"}
+    ashley.last_name
+    :ok
+  end
+
+  @spec struct_arg1(StructKeys1.t()) :: :ok
+  def struct_arg1(person) do
+    person.last_name
+    :ok
+  end
+
+  def struct_arg2(%StructKeys1{} = person) do
+    person.last_name
+    :ok
+  end
+
+  def no_inference() do
+    # build_person => %StructKeys1{first_name: first_name, age: age}
+    person = StructKeys1.build_person("Ashley", 42)
+    person.last_name
+    :ok
+  end
+  
+  def no_inference2() do
+    person = %StructKeys1{} = StructKeys1.build_person("Ashley", 42)
+    person.last_name
+    :ok
+  end
+
+  def not_a_person(), do: :not_a_person
+
+  def no_inference3() do
+    person = %StructKeys1{} = not_a_person()
+    person.first_name
+    :ok
+  end
+end
+```
+
+```elixir
+defmodule Functions do
+  def call_on_unknown_value(arg) do
+    arg.my_fun()
+    arg.()
+  end
+
+  def call_on_non_module() do
+    value = 2
+    value.my_fun()
+  end
+
+  def call_on_non_function() do
+    value = 2
+    value.()
+  end
+
+  def bad_call_on_module() do
+    mod = StructKeys1
+    mod.bad("Ashley", 42)
+  end
+
+  def bad_call_on_module2() do
+    mod = String.to_atom("StructKeys1")
+    mod.bad("Ashley", 42)
+  end
+
+  
+end
+```
