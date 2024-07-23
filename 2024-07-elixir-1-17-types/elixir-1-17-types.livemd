@@ -1,6 +1,6 @@
-# Elixir 1.17 Type Checker
+# Elixir 1.17 Typechecker
 
-## Section
+## Setup
 
 ```elixir
 System.version() |> IO.inspect(label: "Elixir")
@@ -10,6 +10,8 @@ Node.self() |> IO.inspect(label: "Node")
 ```
 
 ## Type modelling
+
+Here we intentionally do bad matches to show the warnings emitted by the typechecker.
 
 ```elixir
 defmodule ModelledTypes do
@@ -45,34 +47,70 @@ defmodule ModelledTypes do
 end
 ```
 
-```elixir
-defmodule MapKeys1 do
-  def missing_key1() do
-    ashley = %{first_name: "Ashley", age: 42}
-    %{last_name: last_name} = ashley
-    :ok
-  end
-end
-```
+## Maps
+
+Maps can be "open" or "closed".
+
+"Closed" maps are those where all keys and value types are known statically.
+
+"Open" maps may have optional extra key-value elements.
+
+The typechecker can warn on the access of a non-existent key of a "closed" map ***using dot-syntax***.
 
 ```elixir
-defmodule MapKeys2 do
-  def missing_key2() do
+defmodule MapKeys do
+  def non_existent_key1() do
     ashley = %{first_name: "Ashley", age: 42}
+    ashley.last_name # would be a runtime error
+    :ok
+  end
+  
+  def non_existent_key2() do
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley[:last_name] # nil
+    :ok
+  end
+
+  def non_existent_key3() do
+    ashley = %{first_name: "Ashley", age: 42}
+    %{last_name: last_name} = ashley # open vs closed
+    :ok
+  end
+  
+  def non_existent_key4() do
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley1 = Map.put(ashley, :occupation, "software developer")
+    ashley1.last_name
+    :ok
+  end
+
+  def non_existent_key5() do
+    foo = :bar
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley = %{ashley | hobby: "cooking"} # runtime error
+    ^foo = ashley
     ashley.last_name
     :ok
   end
+
+   def maybe_non_existent_key(%{first_name: _first_name, age: _age} = params) do
+    foo = :bar
+    ^foo = params # just here to show that params is an "open" map
+    params.last_name
+    :ok
+  end 
 end
 ```
 
-```elixir
-defmodule MapKeys3 do
-  def maybe_missing_key(%{first_name: _first_name, age: _age} = params) do
-    params.last_name
-    :ok
-  end
-end
-```
+## Structs
+
+In the Elixir 1.17 typechecker, **structs** are considered *closed maps* containing the `__struct__` key.
+
+The typechecker can therefore infer the keys and value types of structs that are pattern matched in a function body or its arguments.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Let's consider this struct module in the following examples.
 
 ```elixir
 defmodule Person do
@@ -87,32 +125,39 @@ defmodule Person do
 end
 ```
 
+We get warnings if a non-existent key is accessed, or a value is used in a type-incompatible way.
+
 ```elixir
 defmodule StructKeys1 do
   
-  def missing_key() do
+  def non_existent_key() do
     ashley = %Person{first_name: "Ashley", age: 42}
     ashley.last_name
     :ok
   end
   
-  def missing_key2() do
+  def non_existent_key2() do
     ashley = %Person{}
     ashley.last_name
+    :ok
+  end
+
+  def value_type() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley.age <> "1"
     :ok
   end
 end
 ```
 
+The typechecker does not consider type specifications when typing function arguments.
+
+For the type to be infered, *it must be pattern-matched*.  
+**But only within the same function - the typechecker cannot infer the return-type of functions.**
+
 ```elixir
 defmodule StructKeys2 do  
   
-  def different_field_types() do
-    ashley = %Person{first_name: :ashley, age: "42"}
-    ashley.last_name
-    :ok
-  end
-
   @spec struct_arg1(Person.t()) :: :ok
   def struct_arg1(person) do
     person.last_name
@@ -147,9 +192,42 @@ defmodule StructKeys2 do
 end
 ```
 
+## No inference given function args outside of function
+
+As we saw in the `no_inference*()` functions in the previous code block, there's no inference of types of values returned from functions.
+
+Similarly, there's no inference of types given pattern matches on function arguments between different functions.
+
+```elixir
+defmodule NoInference do
+  defmodule Foo do
+    defstruct [:foo]
+  end
+  defmodule Bar do
+    defstruct [:bar]
+  end
+  defmodule Baz do
+    defstruct [:baz]
+  end
+
+  @spec do_something(%Foo{} | %Bar{}) :: :ok
+  def do_something(%Foo{} = f), do: IO.inspect(f.foo); :ok
+  def do_something(%Bar{} = b), do: IO.inspect(b.bar); :ok
+
+  def call_do_something() do
+    do_something(%Baz{baz: "baz"})
+  end
+end
+```
+
+## Functions
+
+The Elixir 1.17 typechecker can infer misuse of functions and function-call syntax.
+
 ```elixir
 defmodule Functions do
   def call_on_unknown_value(arg) do
+    # arg is not known, but this type-checks
     arg.my_fun()
     arg.()
   end
@@ -170,6 +248,7 @@ defmodule Functions do
   end
 
   def bad_call_on_module2() do
+    # type-checks - no return-type inference, remember?
     mod = String.to_atom("Person")
     mod.bad("Ashley", 42)
   end
@@ -178,50 +257,70 @@ defmodule Functions do
 end
 ```
 
-## Structural Comparisons
+## Comparisons
+
+The typechecker warns if there is a comparison between type-incompatible values.
+
+`==` and `===` are not considered comparisons.
+
+`integer()` and `float()` are considered type-compatible.
 
 ```elixir
-defmodule StructuralComparisons do
+defmodule ValueComparisons do
   def compare_ages() do
-    ashley = %Person{first_name: "Ashley", age: 42}
-    brooklyn = %Person{first_name: "Brooklyn", age: "42"}
-    IO.inspect(ashley.age > brooklyn.age, label: "greater than?")
-    IO.inspect(ashley.age == brooklyn.age, label: "equal?")
-    IO.inspect(ashley.age === brooklyn.age, label: "triple equal?")
+    ashley_age = 42
+    brooklyn_age = "42"
+    brooklyn_name = "Brooklyn"
+    IO.inspect(ashley_age > brooklyn_age, label: "greater than?")
+    IO.inspect(ashley_age == brooklyn_age, label: "equal?") # false
+    IO.inspect(ashley_age === brooklyn_age, label: "triple equal?") # false
+    IO.inspect(ashley_age == brooklyn_name, label: "equal?") # false
     :ok
   end
 
   def compare_ages2() do
-    ashley = %Person{first_name: "Ashley", age: 42}
-    brooklyn = %Person{first_name: "Brooklyn", age: 42.0}
-    IO.inspect(ashley.age > brooklyn.age, label: "greater than?")
-    IO.inspect(ashley.age == brooklyn.age, label: "equal?")
-    IO.inspect(ashley.age === brooklyn.age, label: "triple equal?")
+    ashley_age = 42
+    brooklyn_age = 42.0
+    IO.inspect(ashley_age > brooklyn_age, label: "greater than?") # false
+    IO.inspect(ashley_age == brooklyn_age, label: "WAT?") # true
+    IO.inspect(ashley_age === brooklyn_age, label: "triple WAT?") # false
     :ok
-  end
-
-  def compare_structs() do
-    ashley = %Person{first_name: "Ashley", age: 42}
-    ashley_too = %Person{first_name: "Ashley", age: 42}
-    IO.inspect(ashley > ashley_too, label: "greater than?")
-    IO.inspect(ashley == ashley_too, label: "equal?")
-    IO.inspect(ashley === ashley_too, label: "triple equal?")
-  end
-  
-  def compare_structs() do
-    ashley = %Person{first_name: "Ashley", age: 42}
-    ashley_too = %{first_name: "Ashley", age: 42}
-    IO.inspect(ashley > ashley_too, label: "greater than?")
-    IO.inspect(ashley == ashley_too, label: "equal?")
-    IO.inspect(ashley === ashley_too, label: "triple equal?")
   end
 end
 ```
 
 ```elixir
-StructuralComparisons.compare_ages()
+ValueComparisons.compare_ages()
 ```
 
 ```elixir
-StructuralComparisons.compare_ages2()
+ValueComparisons.compare_ages2()
 ```
+
+## Struct Comparisons
+
+If one or more structs are involved in a comparision, the typechecker warns - even if the comparision *could* make sense.
+
+```elixir
+defmodule StructComparisons do
+  def compare_structs() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_too = %{first_name: "Ashley", age: 42}
+    IO.inspect(ashley > ashley_too, label: "greater than?")
+  end
+
+  def compare_structs2() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_older = %Person{first_name: "Ashley", age: 43}
+    IO.inspect(ashley_older > ashley, label: "greater than?")
+  end
+  
+  def compare_structs3() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_too = %Person{first_name: "Ashley", age: 42}
+    IO.inspect(ashley > ashley_too, label: "head like a hole-driven development")
+  end
+end
+```
+
+## Fin
