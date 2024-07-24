@@ -2,22 +2,6 @@
 
 ## Setup
 
-```elixir
-System.version() |> IO.inspect(label: "Elixir")
-:erlang.system_info(:otp_release) |> IO.chardata_to_string() |> IO.inspect(label: "OTP")
-Node.self() |> IO.inspect(label: "Node")
-:ok
-```
-
-## Type modelling
-
-Firstly, let's look at the types as they are modelled in the Elixir 1.17 type system.
-
-Here we intentionally do bad matches to show the warnings emitted by the typechecker.
-
-Note: most of these "type errors" would be detected in Elixir 1.16 but we get "better" warnings now.
-
-```elixir
 defmodule ModelledTypes do
   def match1() do
     name = "Ashley"
@@ -36,7 +20,7 @@ defmodule ModelledTypes do
     dislikes = %{dislike => value, dynamic_typing: true, pineapple_on_pizza: 200 / 2}
     ^likes = dislikes
   end
-  
+
   def match4() do
     ashley_dob = %Date{} = ~D[1982-07-24]
     brooklyn_dob = %DateTime{} = ~U[1982-07-24 10:00:00Z]
@@ -50,99 +34,72 @@ defmodule ModelledTypes do
     ^brooklyn = increase_age
   end
 end
-```
 
-## Maps
-
-Maps can be "open" or "closed".
-
-"Closed" maps are those where all keys and value types are known statically.
-
-"Open" maps may have optional extra key-value elements.
-
-The typechecker can warn on the access of a non-existent key of a "closed" map ***using dot-syntax***.
-
-```elixir
 defmodule MapKeys do
   def non_existent_key1() do
     ashley = %{first_name: "Ashley", age: 42}
-    ashley.last_name # would be a runtime error
+    # would be a runtime error
+    ashley.last_name
     :ok
   end
-  
+
   def non_existent_key2() do
     ashley = %{first_name: "Ashley", age: 42}
-    ashley[:last_name] # nil
+    # nil
+    ashley[:last_name]
     :ok
   end
 
   def non_existent_key3() do
     ashley = %{first_name: "Ashley", age: 42}
-    %{last_name: _last_name} = ashley # open vs closed
+    # open vs closed
+    %{last_name: _last_name} = ashley
     :ok
   end
-  
+
   def non_existent_key4() do
     ashley = %{first_name: "Ashley", age: 42}
     ashley1 = Map.put(ashley, :occupation, "software developer")
-    ashley1.last_name # dialyzer catches this
+    ashley1.last_name
     :ok
   end
 
   def non_existent_key5() do
     foo = :bar
     ashley = %{first_name: "Ashley", age: 42}
-    ashley = %{ashley | hobby: "cooking"} #?? runtime error + dialyzer
+    # ?? runtime error
+    ashley = %{ashley | hobby: "cooking"}
     ^foo = ashley
     ashley.last_name
     :ok
   end
 
-   def maybe_non_existent_key(%{first_name: _first_name, age: _age} = params) do
+  def maybe_non_existent_key(%{first_name: _first_name, age: _age} = params) do
     foo = :bar
-    ^foo = params # just here to show that params is an "open" map
+    # just here to show that params is an "open" map
+    ^foo = params
     params.last_name
     :ok
-  end 
+  end
 end
-```
 
-## Structs
-
-In the Elixir 1.17 typechecker, **structs** are considered *closed maps* containing the `__struct__` key.
-
-The typechecker can therefore infer the keys and value types of structs that are pattern matched in a function body or its arguments.
-
-<!-- livebook:{"break_markdown":true} -->
-
-Let's consider this struct module in the following examples.
-
-```elixir
 defmodule Person do
-  
   defstruct [:first_name, :age]
-  
+
   @type t :: %__MODULE__{first_name: String.t(), age: integer()}
 
   def build_person(first_name, age) do
     %Person{first_name: first_name, age: age}
   end
 end
-```
 
-We get warnings if a non-existent key is accessed, or a value is used in a type-incompatible way.
-
-Again, all these errors would have been detected in Elixir 1.16.
-
-```elixir
 defmodule StructKeys1 do
-  
   def non_existent_key() do
     ashley = %Person{first_name: "Ashley", age: 42}
     ashley.last_name
     :ok
   end
-  
+
   def non_existent_key2() do
     ashley = %Person{}
     ashley.last_name
@@ -155,20 +112,11 @@ defmodule StructKeys1 do
     :ok
   end
 end
-```
 
-The typechecker does not consider type specifications when typing function arguments.
-
-For the type to be infered, *it must be pattern-matched*.  
-**But only within the same function - the typechecker cannot infer the return-type of functions.**
-Elixir 1.16 finds these errors, too.
-
-```elixir
-defmodule StructKeys2 do  
-  
+defmodule StructKeys2 do
   @spec struct_arg1(Person.t()) :: :ok
   def struct_arg1(person) do
-    person.last_name # dialyzer catches this
+    person.last_name
     :ok
   end
 
@@ -180,10 +128,10 @@ defmodule StructKeys2 do
   def no_inference() do
     # build_person => %Person{first_name: first_name, age: age}
     person = Person.build_person("Ashley", 42)
-    person.last_name # dialyzer catches this 
+    person.last_name
     :ok
   end
-  
+
   def no_inference2() do
     person = %Person{} = Person.build_person("Ashley", 42)
     person.last_name
@@ -194,62 +142,51 @@ defmodule StructKeys2 do
 
   def no_inference3() do
     person = %Person{} = not_a_person()
-    person.first_name # dialyzer catches this
+    person.first_name
     :ok
   end
 end
-```
 
-## No inference given function args outside of function
-
-As we saw in the `no_inference*()` functions in the previous code block, there's no inference of types of values returned from functions.
-
-Similarly, there's no inference of types given pattern matches on function arguments between different functions.
-
-```elixir
 defmodule NoInference do
   defmodule Foo do
     defstruct [:foo]
   end
+
   defmodule Bar do
     defstruct [:bar]
   end
+
   defmodule Baz do
     defstruct [:baz]
   end
 
   @spec do_something(%Foo{} | %Bar{}) :: :ok
-  def do_something(%Foo{} = f), do: IO.inspect(f.foo); :ok
-  def do_something(%Bar{} = b), do: IO.inspect(b.bar); :ok
+  def do_something(%Foo{} = f), do: IO.inspect(f.foo)
+  :ok
+  def do_something(%Bar{} = b), do: IO.inspect(b.bar)
+  :ok
 
   def call_do_something() do
-    do_something(%Baz{baz: "baz"}) # dialyzer catches this
+    do_something(%Baz{baz: "baz"})
   end
 end
-```
 
-## Functions
-
-The Elixir 1.17 typechecker can infer misuse of functions and function-call syntax.
-
-```elixir
 defmodule Functions do
   def call_on_unknown_value(arg) do
-    arg.my_fun() # dialyzer accepts this
-    arg.() # dialyzer catches this because it contradicts the previous line
-    
-    # Function application will fail, 
-    # because _arg :: atom() | %{:my_fun => _, _ => _} is not a function of arity 0.
+    arg.my_fun()
+    arg.()
   end
 
   def call_on_non_module() do
     value = 2
-    value.my_fun() # warns in v1.16
+    # warns in v1.16
+    value.my_fun()
   end
 
   def call_on_non_function() do
     value = 2
-    value.() # warns in v1.16
+    # warns in v1.16
+    value.()
   end
 
   def bad_call_on_module() do
@@ -262,57 +199,36 @@ defmodule Functions do
     mod = String.to_atom("Person")
     mod.bad("Ashley", 42)
   end
-
-  
 end
-```
 
-## Comparisons
-
-The typechecker warns if there is a comparison between type-incompatible values.
-
-`==` and `===` are not considered comparisons.
-
-`integer()` and `float()` are considered type-compatible.
-
-```elixir
 defmodule ValueComparisons do
   def compare_ages() do
     ashley_age = 42
     brooklyn_age = "42"
     brooklyn_name = "Brooklyn"
     IO.inspect(ashley_age > brooklyn_age, label: "greater than?")
-    IO.inspect(ashley_age == brooklyn_age, label: "equal?") # false
-    IO.inspect(ashley_age === brooklyn_age, label: "triple equal?") # false
-    IO.inspect(ashley_age == brooklyn_name, label: "equal?") # false
-    # dialyzer knows the last three lines are contradictions
+    # false
+    IO.inspect(ashley_age == brooklyn_age, label: "equal?")
+    # false
+    IO.inspect(ashley_age === brooklyn_age, label: "triple equal?")
+    # false
+    IO.inspect(ashley_age == brooklyn_name, label: "equal?")
     :ok
   end
 
   def compare_ages2() do
     ashley_age = 42
     brooklyn_age = 42.0
-    IO.inspect(ashley_age > brooklyn_age, label: "greater than?") # false
-    IO.inspect(ashley_age == brooklyn_age, label: "WAT?") # true
-    IO.inspect(ashley_age === brooklyn_age, label: "triple WAT?") # false
+    # false
+    IO.inspect(ashley_age > brooklyn_age, label: "greater than?")
+    # true
+    IO.inspect(ashley_age == brooklyn_age, label: "WAT?")
+    # false
+    IO.inspect(ashley_age === brooklyn_age, label: "triple WAT?")
     :ok
   end
 end
-```
 
-```elixir
-ValueComparisons.compare_ages()
-```
-
-```elixir
-ValueComparisons.compare_ages2()
-```
-
-## Struct Comparisons
-
-If one or more structs are involved in a comparision, the typechecker warns - even if the comparision *could* make sense.
-
-```elixir
 defmodule StructComparisons do
   def compare_structs() do
     ashley = %Person{first_name: "Ashley", age: 42}
@@ -325,13 +241,12 @@ defmodule StructComparisons do
     ashley_older = %Person{first_name: "Ashley", age: 43}
     IO.inspect(ashley_older > ashley, label: "greater than?")
   end
-  
+
   def compare_structs3() do
     ashley = %Person{first_name: "Ashley", age: 42}
     ashley_too = %Person{first_name: "Ashley", age: 42}
     IO.inspect(ashley > ashley_too, label: "head like a hole-driven development")
   end
 end
-```
 
 ## Fin

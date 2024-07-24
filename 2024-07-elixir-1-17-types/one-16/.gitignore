@@ -1,2 +1,6 @@
 .envrc
 .direnv
+.nix-mix
+.nix-hex
+_build
+deps
