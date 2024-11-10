@@ -225,6 +225,10 @@ defmodule NoInference do
   def call_do_something() do
     do_something(%Baz{baz: "baz"}) # dialyzer catches this
   end
+
+  $ negate ::  ((integer() -> integer() and boolean() -> boolean())
+  def negate(x), when integer()
+  def negate(x), when boolean()
 end
 ```
 
