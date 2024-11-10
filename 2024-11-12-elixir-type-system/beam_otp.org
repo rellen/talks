@@ -1,0 +1,26 @@
+** The BEAM
+
+- Erlang's virtual machine / runtime system
+- lightweight processes, SMP
+- multi-generational, per-process garbage collector
+- asynchronous, location-transparent, message-passing IPC
+- hot-code-loading
+- powerful REPL and introspection tools
+- new JIT compiler (BEAM bytecode to machine code)
+
+
+** The OTP libraries
+
+- Erlang's "standard library"
+- dozens of modules providing various typical stdlib stuff
+- core of which are for supervision trees
+  + =gen_server= - actors / workers
+  + supervisors - handling starting/stopping/restarting =gen_servers=
+
+** supervision trees
+
+#+BEGIN_EXPORT latex
+  \begin{center}
+  \includegraphics[width=0.8\textwidth]{./img/tree.png}
+  \end{center}
+#+END_EXPORT

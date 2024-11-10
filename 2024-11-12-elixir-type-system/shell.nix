@@ -7,6 +7,7 @@ let
 in pkgs.mkShell rec {
   name = "1.17 R27";
   buildInputs = with pkgs; [
+   (texlive.combine { inherit (texlive) scheme-full; })
     rebar
     rebar3
     erlang

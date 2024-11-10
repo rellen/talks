@@ -1,0 +1,31 @@
+#+TITLE: Elixir's Set-Theoretic Type System
+#+AUTHOR: Robert Ellen
+#+DATE: 2024/11/12
+
+#+INCLUDE: "./headers.org"
+
+* Summary
+
+
+* Elixir
+
+#+BEGIN_EXPORT latex
+
+
+#+END_EXPORT
+
+#+INCLUDE: "./erlang_ecosystem.org"
+
+#+INCLUDE: "./erlang_history.org"
+
+#+INCLUDE: "./beam_otp.org"
+
+#+INCLUDE: "./elixir_history_features.org"
+
+#+INCLUDE: "./beam_types.org"
+
+#+INCLUDE: "./references.org"
+
+** Thank you
+
+I'll post slides soon.
