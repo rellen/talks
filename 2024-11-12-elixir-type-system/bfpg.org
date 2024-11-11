@@ -4,15 +4,19 @@
 
 #+INCLUDE: "./headers.org"
 
-* Summary
+** Summary
 
+- Q: ..., A: ``A static type system!"
+- rich history of static type systems for BEAM languages
+- R&D project to build the definitive static type system for Elixir
+- gradual semantic subtyping with innovations for Elixir's features
+- gradual introduction into production Elixir compiler
 
-* Elixir
+** Disclaimer
 
-#+BEGIN_EXPORT latex
-
-
-#+END_EXPORT
+- I am not a student of programming language / type theory
+- mistakes are my own
+- check out the paper and references
 
 #+INCLUDE: "./erlang_ecosystem.org"
 

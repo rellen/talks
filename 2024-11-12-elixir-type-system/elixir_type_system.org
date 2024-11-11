@@ -35,10 +35,15 @@ https://doi.org/10.22152/programming-journal.org/2024/8/4
 - establish subtyping relationships between types based on the semantic meaning of values of the types
 - semantic meaning derived from treating types as sets, values as set members
 - set operations on types: union, intersection, and negation
+
+** Semantic subtyping
+
 - in comparison to Hindley-Milner, relax $U = V$ to $U \subseteq V$
 - strictly more general--an extension to HM
 - Frish et. al. referencing Aiken & Wimmers (also ref. by Marlow & Wadler)
 - good idea because dynamically-typed languages variables can hold different types at run-time: hence union-ing
+
+
 
 ** Subtyping in type checking
 - subtyping is a means to typechecking programs due to ``subsumption"
@@ -52,10 +57,136 @@ https://doi.org/10.22152/programming-journal.org/2024/8/4
 
 - given some expression $e$ and types $T_1$ and $T_2$, if the type of $e$ is $T_1$ and $T_1$ is a subtype of $T_2$ then $e$ can be considered to also be of type $T_2$
 
+** Set-theoretic reasoning and type annotations
 
-** Set-theoretic type annotations
+- the notation is based on Erlang/Elixir typespec
+#+BEGIN_SRC elixir
+integer(), boolean(), binary(), float(), ... # indivisible types
 
-examples here
+atom(), :foo, # divisible types
+
+list(element()) # element() is a concrete type
+
+container(a) when a: term() # a is a type variable
+
+%{required(:name) => binary(), ...}
+# a map that must have at least a key :name of value binary()
+
+%{required(:name) => binary(), required(:age) => integer()}
+# a map that can have only :name and :age keys
+#+END_SRC
+
+** Set-theoretic reasoning and type annotations
+
+- special types
+#+BEGIN_SRC elixir
+term() # top type
+
+none() # bottom type
+
+dynamic() # any type
+#+END_SRC
+
+
+** Set-theoretic reasoning and type annotations
+
+#+BEGIN_SRC elixir
+# union
+integer() or boolean()
+
+# intersection
+# say we have these typespec types
+@type person :: %{:name => binary(), :age => integer()}
+@type school_record :: %{:school => binary(), :gpa => float()}
+# and we want a student() type
+person() and school_record()
+
+# negation
+not integer()
+
+# combinations - e.g. all atoms except true, false, nil
+atom() and not(boolean() or nil)
+#+END_SRC
+
+** Set-theoretic reasoning and type annotations
+
+#+BEGIN_SRC elixir
+term() === not none()
+
+none() === not term()
+
+boolean() and integer() === none()
+#+END_SRC
+
+
+** Set-theoretic reasoning and type annotations
+
+- type annotation of functions with =$= - only reserved symbol left unused!
+- function arguments comma-separated
+- function application =->=
+
+#+BEGIN_SRC elixir
+$ (integer(), integer()) -> integer()
+def add(x,y), do: x + y
+#+END_SRC
+
+** Set-theoretic reasoning and type annotations
+
+- function types are set-theoretic too
+#+BEGIN_SRC elixir
+
+$ integer() -> integer()
+def negate(x) when is_integer(x), do: -x
+
+$ (integer(), integer()) -> integer()
+def subtract(a, b) when is_integer(a) and is_integer(b) do
+  a + negate(b)
+end
+#+END_SRC
+
+** Set-theoretic reasoning and type annotations
+
+- function types are set-theoretic too: let's expand negate to =boolean()=
+#+BEGIN_SRC elixir
+$ (integer() or boolean()) -> (integer() or boolean())
+def negate(x) when is_integer(x), do: -x
+def negate(x) when is_boolean(x), do: not x
+#+END_SRC
+
+** Set-theoretic reasoning and type annotations
+
+#+BEGIN_SRC elixir
+$ (integer() or boolean()) -> (integer() or boolean())
+def negate(x) when is_integer(x), do: -x
+def negate(x) when is_boolean(x), do: not x
+
+Type warning:
+  | def subtract(a, b) when is_integer(a) and is_integer(b) do
+  |   a + negate(b)
+        ^ the operator + expects integer(), integer() as arguments,
+          but the second argument can be integer() or boolean()
+
+#+END_SRC
+
+** Set-theoretic reasoning and type annotations
+
+#+BEGIN_SRC elixir
+$ (integer() or boolean()) -> (integer() or boolean())
+def negate(x) when is_integer(x), do: -x
+def negate(x) when is_boolean(x), do: not x
+
+Type warning:
+  | def subtract(a, b) when is_integer(a) and is_integer(b) do
+  |   a + negate(b)
+        ^ the operator + expects integer(), integer() as arguments,
+          but the second argument can be integer() or boolean()
+
+# a more precise (and correct in regards to subtract) type
+$ (integer() -> integer()) and (boolean() -> boolean())
+
+# negate is in the set of functions integer() -> integer()
+# and the set of functions boolean() -> boolean()
+#+END_SRC
 
 ** Polymorphic with local type inference
 
@@ -101,7 +232,8 @@ end
 
 #+BEGIN_SRC elixir
 ashley = %{name: "Ashley", age: 42}
-# ashley :: %{:name => binary(), :age => integer()}
+# %{required(:name)=> binary(),
+#   required(:age) => integer()}
 
 words = "The Elixir Type System ..."
 word_count = wc(words) # :: %{optional(binary()) => integer()}
@@ -138,17 +270,17 @@ ashley = %{name: "Ashley", age: 42}
 
 #+BEGIN_SRC elixir
 ashley = %{name: "Ashley", age: 42}
-# ashley :: %{:name => binary(), :age => integer()}
+# %{:name => binary(), :age => integer()}
 
 ashley_at_school = %{name: "Ashley", age: 42, gpa: 6.75}
-# ashley_at_school :: %{:name => binary(),
-#                       :age => integer(),
-#                       :gpa => float()}
+#  %{:name => binary(),
+#    :age => integer(),
+#    :gpa => float()}
 
 def enroll(%{name: _, age: _} = person) do ...
 #+END_SRC
 
-- the type system innovates semantic subtyping to handle maps
+- but the type system innovates semantic subtyping to handle maps in all cases
   + Castagna 2023
 
 ** Gradual typing with =dynamic()=

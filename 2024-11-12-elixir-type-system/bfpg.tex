@@ -131,13 +131,35 @@
 \begin{document}
 \frame{\titlepage}
 
-\section{Summary}\label{summary}
+\begin{frame}{Summary}
+\phantomsection\label{summary}
+\begin{itemize}
+\tightlist
+\item
+  Q: \ldots, A: ``A static type system!"
+\item
+  rich history of static type systems for BEAM languages
+\item
+  R\&D project to build the definitive static type system for Elixir
+\item
+  gradual semantic subtyping with innovations for
+  Elixir\textquotesingle s features
+\item
+  gradual introduction into production Elixir compiler
+\end{itemize}
+\end{frame}
 
-\section{Elixir}\label{elixir-1}
-
-\begin{frame}{Elixir}
-
-
+\begin{frame}{Disclaimer}
+\phantomsection\label{disclaimer}
+\begin{itemize}
+\tightlist
+\item
+  I am not a student of programming language / type theory
+\item
+  mistakes are my own
+\item
+  check out the paper and references
+\end{itemize}
 \end{frame}
 
 \section{The Erlang Ecosystem}\label{the-erlang-ecosystem}
@@ -568,6 +590,13 @@ of Programming, 2024, Vol. 8, Issue 2, Article 4
   members
 \item
   set operations on types: union, intersection, and negation
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Semantic subtyping}
+\phantomsection\label{semantic-subtyping-1}
+\begin{itemize}
+\tightlist
 \item
   in comparison to Hindley-Milner, relax \(U = V\) to \(U \subseteq V\)
 \item
@@ -604,9 +633,170 @@ of Programming, 2024, Vol. 8, Issue 2, Article 4
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Set-theoretic type annotations}
-\phantomsection\label{set-theoretic-type-annotations}
-examples here
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations}
+\begin{itemize}
+\tightlist
+\item
+  the notation is based on Erlang/Elixir typespec
+\end{itemize}
+
+\begin{lstlisting}
+integer(), boolean(), binary(), float(), ... # indivisible types
+
+atom(), :foo, # divisible types
+
+list(element()) # element() is a concrete type
+
+container(a) when a: term() # a is a type variable
+
+%{required(:name) => binary(), ...}
+# a map that must have at least a key :name of value binary()
+
+%{required(:name) => binary(), required(:age) => integer()}
+# a map that can have only :name and :age keys
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-1}
+\begin{itemize}
+\tightlist
+\item
+  special types
+\end{itemize}
+
+\begin{lstlisting}
+term() # top type
+
+none() # bottom type
+
+dynamic() # any type
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-2}
+\begin{lstlisting}
+# union
+integer() or boolean()
+
+# intersection
+# say we have these typespec types
+@type person :: %{:name => binary(), :age => integer()}
+@type school_record :: %{:school => binary(), :gpa => float()}
+# and we want a student() type
+person() and school_record()
+
+# negation
+not integer()
+
+# combinations - e.g. all atoms except true, false, nil
+atom() and not(boolean() or nil)
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-3}
+\begin{lstlisting}
+term() === not none()
+
+none() === not term()
+
+boolean() and integer() === none()
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-4}
+\begin{itemize}
+\tightlist
+\item
+  type annotation of functions with \passthrough{\lstinline!$!} - only
+  reserved symbol left unused!
+\item
+  function arguments comma-separated
+\item
+  function application \passthrough{\lstinline!->!}
+\end{itemize}
+
+\begin{lstlisting}
+$ (integer(), integer()) -> integer()
+def add(x,y), do: x + y
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-5}
+\begin{itemize}
+\tightlist
+\item
+  function types are set-theoretic too
+\end{itemize}
+
+\begin{lstlisting}
+
+$ integer() -> integer()
+def negate(x) when is_integer(x), do: -x
+
+$ (integer(), integer()) -> integer()
+def subtract(a, b) when is_integer(a) and is_integer(b) do
+  a + negate(b)
+end
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-6}
+\begin{itemize}
+\tightlist
+\item
+  function types are set-theoretic too: let\textquotesingle s expand
+  negate to \passthrough{\lstinline!boolean()!}
+\end{itemize}
+
+\begin{lstlisting}
+$ (integer() or boolean()) -> (integer() or boolean())
+def negate(x) when is_integer(x), do: -x
+def negate(x) when is_boolean(x), do: not x
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-7}
+\begin{lstlisting}
+$ (integer() or boolean()) -> (integer() or boolean())
+def negate(x) when is_integer(x), do: -x
+def negate(x) when is_boolean(x), do: not x
+
+Type warning:
+  | def subtract(a, b) when is_integer(a) and is_integer(b) do
+  |   a + negate(b)
+        ^ the operator + expects integer(), integer() as arguments,
+          but the second argument can be integer() or boolean()
+
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Set-theoretic reasoning and type annotations}
+\phantomsection\label{set-theoretic-reasoning-and-type-annotations-8}
+\begin{lstlisting}
+$ (integer() or boolean()) -> (integer() or boolean())
+def negate(x) when is_integer(x), do: -x
+def negate(x) when is_boolean(x), do: not x
+
+Type warning:
+  | def subtract(a, b) when is_integer(a) and is_integer(b) do
+  |   a + negate(b)
+        ^ the operator + expects integer(), integer() as arguments,
+          but the second argument can be integer() or boolean()
+
+# a more precise (and correct in regards to subtract) type
+$ (integer() -> integer()) and (boolean() -> boolean())
+
+# negate is in the set of functions integer() -> integer()
+# and the set of functions boolean() -> boolean()
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}[fragile]{Polymorphic with local type inference}
@@ -687,7 +877,8 @@ end
 
 \begin{lstlisting}
 ashley = %{name: "Ashley", age: 42}
-# ashley :: %{:name => binary(), :age => integer()}
+# %{required(:name)=> binary(),
+#   required(:age) => integer()}
 
 words = "The Elixir Type System ..."
 word_count = wc(words) # :: %{optional(binary()) => integer()}
@@ -741,12 +932,12 @@ ashley = %{name: "Ashley", age: 42}
 
 \begin{lstlisting}
 ashley = %{name: "Ashley", age: 42}
-# ashley :: %{:name => binary(), :age => integer()}
+# %{:name => binary(), :age => integer()}
 
 ashley_at_school = %{name: "Ashley", age: 42, gpa: 6.75}
-# ashley_at_school :: %{:name => binary(),
-#                       :age => integer(),
-#                       :gpa => float()}
+#  %{:name => binary(),
+#    :age => integer(),
+#    :gpa => float()}
 
 def enroll(%{name: _, age: _} = person) do ...
 \end{lstlisting}
@@ -754,7 +945,8 @@ def enroll(%{name: _, age: _} = person) do ...
 \begin{itemize}
 \tightlist
 \item
-  the type system innovates semantic subtyping to handle maps
+  but the type system innovates semantic subtyping to handle maps in all
+  cases
 
   \begin{itemize}
   \tightlist
