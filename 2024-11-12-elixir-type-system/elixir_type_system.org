@@ -23,6 +23,19 @@
 - Frish et. al. referencing Aiken & Wimmers (also ref. by Marlow & Wadler)
 - good idea because dynamically-typed languages variables can hold different types at run-time: hence union-ing
 
+
+** Sub-typing in type checking
+- sub-typing is a means to typechecking programs due to ``subsumption"
+
+\huge
+#+BEGIN_EXPORT latex
+  \begin{center}
+   $\frac{e : T_1 \quad T_1 <: T_2}{e : T_2}$
+   \end{center}
+#+END_EXPORT
+
+- given some expression $e$ and types $T_1$ and $T_2$, if the type of $e$ is $T_1$ and $T_1$ is a sub-type of $T_2$ then $e$ can be considered to also be of type $T_2$
+
 ** Polymorphic with local type inference
 
 - type variables: =a, b= - no parentheses
@@ -119,6 +132,41 @@ def enroll(%{name: _, age: _} = person) do ...
 
 ** Gradual typing with =dynamic()=
 
+- as per requirements, avoid boiling the ocean in existing codebases
+- gradual typing: see TypeScript, gradualizer
+- a type that ``materialises" into any other type
+- a type that can be the sub-type and super-type of any other type
+  + =term()= can only be the later, so need a new type
+- =dynamic()=
+
+** Gradual typing with =dynamic()=
+
+- ``sound gradual typing" - Siek & Taha 2006
+- in the presence of dynamic typing, partial static typing still works
+- a static type annotation/inference guarantees an expression either:
+  + never returns
+  + returns a value of the static type
+  + emits a runtime exception
+- necessitates the addition of runtime checks to the compiled program
+- Elixir innovation: as per requirements, no change to the compiled program
+
+
+** Halting =dynamic()= propagation
+- VM and programmer type-checks halt the propagation of =dynamic()=
+- functions with these checks are referred to as ``strong arrows"
+
+#+BEGIN_SRC elixir
+$ integer() -> integer()
+def id_strong(x) when is_integer(x), do: x
+
+$ integer() -> integer()
+def id_weak(x), do: x
+
+# due to "weak" vs "strong" arrows, the following
+# is an acceptable type annotation for `ids(x)`
+$ dynamic() -> {dynamic(), integer()}
+def ids(x), do: {id_weak(x), id_strong(x)}
+#+END_SRC
 
 ** Gradually introducing the system
 - don't discount the chance of a deal-breaker in prod code taking them back to the drawing board

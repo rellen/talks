@@ -527,6 +527,29 @@ System}\label{elixirs-set-theoretic-type-system-7}
 \end{itemize}
 \end{frame}
 
+\begin{frame}{Sub-typing in type checking}
+\phantomsection\label{sub-typing-in-type-checking}
+\begin{itemize}
+\tightlist
+\item
+  sub-typing is a means to typechecking programs due to ``subsumption"
+\end{itemize}
+
+\huge
+
+\begin{center}
+ $\frac{e : T_1 \quad T_1 <: T_2}{e : T_2}$
+ \end{center}
+
+\begin{itemize}
+\tightlist
+\item
+  given some expression \(e\) and types \(T_1\) and \(T_2\), if the type
+  of \(e\) is \(T_1\) and \(T_1\) is a sub-type of \(T_2\) then \(e\)
+  can be considered to also be of type \(T_2\)
+\end{itemize}
+\end{frame}
+
 \begin{frame}[fragile]{Polymorphic with local type inference}
 \phantomsection\label{polymorphic-with-local-type-inference}
 \begin{itemize}
@@ -682,8 +705,83 @@ def enroll(%{name: _, age: _} = person) do ...
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Gradual typing with \passthrough{\lstinline!dynamic()!}}
+\begin{frame}[fragile]{Gradual typing with
+\passthrough{\lstinline!dynamic()!}}
 \phantomsection\label{gradual-typing-with-dynamic}
+\begin{itemize}
+\tightlist
+\item
+  as per requirements, avoid boiling the ocean in existing codebases
+\item
+  gradual typing: see TypeScript, gradualizer
+\item
+  a type that ``materialises" into any other type
+\item
+  a type that can be the sub-type and super-type of any other type
+
+  \begin{itemize}
+  \tightlist
+  \item
+    \passthrough{\lstinline!term()!} can only be the later, so need a
+    new type
+  \end{itemize}
+\item
+  \passthrough{\lstinline!dynamic()!}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Gradual typing with \passthrough{\lstinline!dynamic()!}}
+\phantomsection\label{gradual-typing-with-dynamic-1}
+\begin{itemize}
+\tightlist
+\item
+  ``sound gradual typing" - Siek \& Taha 2006
+\item
+  in the presence of dynamic typing, partial static typing still works
+\item
+  a static type annotation/inference guarantees an expression either:
+
+  \begin{itemize}
+  \tightlist
+  \item
+    never returns
+  \item
+    returns a value of the static type
+  \item
+    emits a runtime exception
+  \end{itemize}
+\item
+  necessitates the addition of runtime checks to the compiled program
+\item
+  Elixir innovation: as per requirements, no change to the compiled
+  program
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Halting \passthrough{\lstinline!dynamic()!}
+propagation}
+\phantomsection\label{halting-dynamic-propagation}
+\begin{itemize}
+\tightlist
+\item
+  VM and programmer type-checks halt the propagation of
+  \passthrough{\lstinline!dynamic()!}
+\item
+  functions with these checks are referred to as ``strong arrows"
+\end{itemize}
+
+\begin{lstlisting}
+$ integer() -> integer()
+def id_strong(x) when is_integer(x), do: x
+
+$ integer() -> integer()
+def id_weak(x), do: x
+
+# due to "weak" vs "strong" arrows, the following
+# is an acceptable type annotation for `ids(x)`
+$ dynamic() -> {dynamic(), integer()}
+def ids(x), do: {id_weak(x), id_strong(x)}
+\end{lstlisting}
 \end{frame}
 
 \begin{frame}{Gradually introducing the system}
@@ -723,6 +821,10 @@ In Proceedings of the Second ACM SIGPLAN International Conference on
 Functional Programming, ICFP '97, page 136--149, New York, NY, USA,
 1997. Association for Computing Machinery.
 \url{doi:10.1145/258948.258962}.
+
+Jeremy G. Siek and Walid Taha. Gradual typing for functional languages.
+In Scheme and Functional Programming Workshop, University of Chicago
+Technical Report TR-2006-06, pages 81--92, 2006.
 \end{frame}
 
 \begin{frame}{Thank you}

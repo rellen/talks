@@ -21,3 +21,7 @@ Simon Marlow and Philip Wadler. A practical subtyping system for erlang. In
 Proceedings of the Second ACM SIGPLAN International Conference on Functional
 Programming, ICFP ’97, page 136–149, New York, NY, USA, 1997. Association
 for Computing Machinery. doi:10.1145/258948.258962.
+
+Jeremy G. Siek and Walid Taha. Gradual typing for functional languages. In
+Scheme and Functional Programming Workshop, University of Chicago Technical
+Report TR-2006-06, pages 81–92, 2006.
