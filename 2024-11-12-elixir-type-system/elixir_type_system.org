@@ -1,31 +1,47 @@
-* Elixir's Set-Theoretic Type System
+* Elixir's set-theoretic type system
 
-** Goal
+** Elixir's set-theoretic type system
 
-- works on existing Elixir code-bases
-- need range of techniques to give system a chance of being adopted
+A research and development project to gradually introduce a static type system to Elixir.
+
+\small
+Giuseppe Castagna, Guillaume Duboc, and José Valim. The Design Principles of the Elixir Type System
+The Art, Science, and Engineering of Programming, 2024, Vol. 8, Issue 2, Article 4
+https://doi.org/10.22152/programming-journal.org/2024/8/4
+
+** Requirements
+
+- no modification to the syntax of Elixir expressions
+- gradual typing
+- extract maximum type information from patterns and guards
+- mode to emit warnings when explicitly using gradual typing
+- type annotations across language before advanced features
+- initially - typing does not modify the compilation of Elixir code
 
 ** Features of the type system
 
- - semantic sub-typing hence set-theoretic
- - polymorphic with local type inference
-   + type variables
-   + requires some type annotations--but not everywhere
+- semantic subtyping hence set-theoretic
+- parametric polymorphism with local type inference
+  + type variables
+  + requires some type annotations--but not everywhere
+- use patterns and guards
+- typing maps in all use-cases
+- gradual typing
+- strong arrows
+- typing ad-hoc polymorphism
 
+** Semantic subtyping
 
-** Semantic sub-typing
-
-- establish sub-typing relationships between types based on the semantic meaning of values of the types
+- establish subtyping relationships between types based on the semantic meaning of values of the types
 - semantic meaning derived from treating types as sets, values as set members
 - set operations on types: union, intersection, and negation
 - in comparison to Hindley-Milner, relax $U = V$ to $U \subseteq V$
-- strictly more general - an extension to HM
+- strictly more general--an extension to HM
 - Frish et. al. referencing Aiken & Wimmers (also ref. by Marlow & Wadler)
 - good idea because dynamically-typed languages variables can hold different types at run-time: hence union-ing
 
-
-** Sub-typing in type checking
-- sub-typing is a means to typechecking programs due to ``subsumption"
+** Subtyping in type checking
+- subtyping is a means to typechecking programs due to ``subsumption"
 
 \huge
 #+BEGIN_EXPORT latex
@@ -34,7 +50,12 @@
    \end{center}
 #+END_EXPORT
 
-- given some expression $e$ and types $T_1$ and $T_2$, if the type of $e$ is $T_1$ and $T_1$ is a sub-type of $T_2$ then $e$ can be considered to also be of type $T_2$
+- given some expression $e$ and types $T_1$ and $T_2$, if the type of $e$ is $T_1$ and $T_1$ is a subtype of $T_2$ then $e$ can be considered to also be of type $T_2$
+
+
+** Set-theoretic type annotations
+
+examples here
 
 ** Polymorphic with local type inference
 
@@ -113,7 +134,7 @@ ashley = %{name: "Ashley", age: 42}
 #+END_SRC
 
 ** Maps as ``records" and ``dictionaries"
-- sub-typing maps feels like structural sub-typing...
+- subtyping maps feels like structural subtyping...
 
 #+BEGIN_SRC elixir
 ashley = %{name: "Ashley", age: 42}
@@ -127,7 +148,7 @@ ashley_at_school = %{name: "Ashley", age: 42, gpa: 6.75}
 def enroll(%{name: _, age: _} = person) do ...
 #+END_SRC
 
-- the type system innovates semantic sub-typing to handle maps
+- the type system innovates semantic subtyping to handle maps
   + Castagna 2023
 
 ** Gradual typing with =dynamic()=
@@ -135,7 +156,7 @@ def enroll(%{name: _, age: _} = person) do ...
 - as per requirements, avoid boiling the ocean in existing codebases
 - gradual typing: see TypeScript, gradualizer
 - a type that ``materialises" into any other type
-- a type that can be the sub-type and super-type of any other type
+- a type that can be the subtype and supertype of any other type
   + =term()= can only be the later, so need a new type
 - =dynamic()=
 
@@ -152,7 +173,7 @@ def enroll(%{name: _, age: _} = person) do ...
 
 
 ** Halting =dynamic()= propagation
-- VM and programmer type-checks halt the propagation of =dynamic()=
+- VM and programmer type checks halt the propagation of =dynamic()=
 - functions with these checks are referred to as ``strong arrows"
 
 #+BEGIN_SRC elixir
@@ -168,5 +189,41 @@ $ dynamic() -> {dynamic(), integer()}
 def ids(x), do: {id_weak(x), id_strong(x)}
 #+END_SRC
 
+** ``Solving" the expression problem with protocols
+- ``ad-hoc" polymorphism akin to typeclasses
+- the type system will union all implementations of =String.Chars= to define a type =String.Chars.t()=
+
+#+BEGIN_SRC elixir
+defmodule MyNewType do
+  defstruct [:data]
+end
+
+defimpl String.Chars, for: MyNewType do
+  def to_string(value) do ... end
+end
+#+END_SRC
+
+
+** ``Solving" the expression problem with protocols
+- combines with parametric polymorphism
+- please say it is so!
+
+#+BEGIN_SRC elixir
+# functory.ex
+$ Functory.t(a), (a -> b) -> Functory.t(b)
+    when a: term(),  b: term()
+def map(xs, f)
+...
+# my_struct.ex
+defimpl Functory, for: MyStruct do
+  def map(xs, f) do ... end
+end
+#+END_SRC
+
+
 ** Gradually introducing the system
 - don't discount the chance of a deal-breaker in prod code taking them back to the drawing board
+- phased approach to introducing the experimental system into production Elixir compiler
+  + local inference of some Elixir types: v1.17
+  + type all Elixir data types and add typing of (and use information inferred from) pattern matching and guards: v1.18
+  + type annotations for functions: v1.?

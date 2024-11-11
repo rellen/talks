@@ -7,19 +7,24 @@
 ``We can stop waiting for functional languages to be used in practice--that day is here!"
 #+END_EXPORT
 
-+ threw away Hindley-Milner: $U = V$ -- this would not work with existing Erlang codebases
-+ opted for strictly more general ``semantic sub-typing" instead: $U \subseteq V$
-+ (Aiken & Wimmers - 1993)
+- threw away Hindley-Milner: $U = V$ -- this would not work with existing Erlang codebases
+- opted for strictly more general ``semantic sub-typing" instead: $U \subseteq V$
+- this approach developed by Aiken & Wimmers 1993
 
 ** eqWAlizer
 
-Developed by Meta for WhatsApp
+- Developed by Meta for WhatsApp
+- set-theoretic gradual typing
+- https://github.com/WhatsApp/eqwalizer
 
 
 ** Static analysis tools
 
  - rely on the Erlang Typespec notation - not checked by compiler
- - dialyzer - success-typing - Linhahl & Sagonas, 2006
+ - dialyzer
+   + success-typing based on whole-program analysis
+   + will only fail if it can prove there's a problem (no false positives)
+   + Linhahl & Sagonas, 2006
  - gradualizer - gradual set-theoretic-inspired typing
 
 ** Typed BEAM languages with alternate semantics

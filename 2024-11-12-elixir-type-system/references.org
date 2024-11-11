@@ -7,15 +7,19 @@ Copenhagen, Denmark, 31–41
 Giuseppe Castagna. Typing records, maps, and structs. Proc. ACM Program.
 Lang., 7(ICFP), September 2023. doi:10.1145/3607838.
 
+Giuseppe Castagna, Guillaume Duboc, and José Valim. The Design Principles of the Elixir Type System
+The Art, Science, and Engineering of Programming, 2024, Vol. 8, Issue 2, Article 4
+https://doi.org/10.22152/programming-journal.org/2024/8/4
+
 Alain Frisch, Giuseppe Castagna, and Véronique Benzaken. Semantic subtyping:
 dealing set-theoretically with function, union, intersection, and negation types.
 Journal of the ACM, 55(4):1–64, 2008. doi:10.1145/1391289.1391293
 
+** References
+
 Tobias Lindahl and Konstantinos Sagonas. Practical type inference based on
 success typings. In ACM-SIGPLAN International Conference on Principles and
 Practice of Declarative Programming, 2006. doi:10.1145/1140335.1140356.
-
-** References
 
 Simon Marlow and Philip Wadler. A practical subtyping system for erlang. In
 Proceedings of the Second ACM SIGPLAN International Conference on Functional

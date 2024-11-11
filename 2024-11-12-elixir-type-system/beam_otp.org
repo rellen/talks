@@ -3,9 +3,9 @@
 ** The BEAM
 
 - Erlang's virtual machine / runtime system
-- lightweight processes, SMP
+- lightweight processes, SMP, low-latency IO, soft realtime, minimal locks
 - multi-generational, per-process garbage collector
-- asynchronous, location-transparent, message-passing IPC
+- asynchronous, location-transparent, message passing IPC
 - hot-code-loading
 - powerful REPL and introspection tools
 - new JIT compiler (BEAM bytecode to machine code)
