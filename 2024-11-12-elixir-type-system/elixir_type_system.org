@@ -1,0 +1,124 @@
+* Elixir's Set-Theoretic Type System
+
+** Goal
+
+- works on existing Elixir code-bases
+- need range of techniques to give system a chance of being adopted
+
+** Features of the type system
+
+ - semantic sub-typing hence set-theoretic
+ - polymorphic with local type inference
+   + type variables
+   + requires some type annotations--but not everywhere
+
+
+** Semantic sub-typing
+
+- establish sub-typing relationships between types based on the semantic meaning of values of the types
+- semantic meaning derived from treating types as sets, values as set members
+- set operations on types: union, intersection, and negation
+- in comparison to Hindley-Milner, relax $U = V$ to $U \subseteq V$
+- strictly more general - an extension to HM
+- Frish et. al. referencing Aiken & Wimmers (also ref. by Marlow & Wadler)
+- good idea because dynamically-typed languages variables can hold different types at run-time: hence union-ing
+
+** Polymorphic with local type inference
+
+- type variables: =a, b= - no parentheses
+- local type inference
+  + functions must have type annotations
+  + types are inferred for arguments and return types
+
+** Polymorphic with local type inference
+
+#+BEGIN_SRC elixir
+$ (list(a), a -> b) -> list(b)
+def map([], _), do: []
+def map([x | xs], f), do:  [f.(x) | map(xs, f)]
+
+x = map([1, 2, 3], &double/1)
+# type system infers type of double and x
+#+END_SRC
+
+** Guards and pattern-matching
+- Elixir has rich run-time testing of types
+- the type system can type captured variables and variables in guards
+
+#+BEGIN_SRC elixir
+def elem_at([x | rest] = xs, pos) when is_integer(pos) do...
+#+END_SRC
+
+** Guards and pattern-matching
+- ``type narrowing" can check exhaustiveness of case expressions
+- type system is conservative: case branches must handle =xs= being any map or list
+#+BEGIN_SRC elixir
+def elem_at(xs, pos) when is_map(xs) or is_list(x) do
+  case xs do
+    %{} -> # get for map
+    [] -> # get for list
+    _ -> # redundant
+  end
+end
+#+END_SRC
+
+** Maps as ``records" and ``dictionaries"
+- maps can represent records, dictionaries, and structs
+
+#+BEGIN_SRC elixir
+ashley = %{name: "Ashley", age: 42}
+# ashley :: %{:name => binary(), :age => integer()}
+
+words = "The Elixir Type System ..."
+word_count = wc(words) # :: %{optional(binary()) => integer()}
+word_count["Elixir"] # 42
+
+defstruct [:id , name: "", age: 0]
+# %{
+#   :__struct__ => :"User",
+#   :id => term(),
+#   :name => binary(),
+#   :age => integer()
+# }
+#+END_SRC
+
+
+** Maps as ``records" and ``dictionaries"
+- the type system treats maps as open or closed
+  + open means there are potentially unknown keys
+- strict or dynamic access changes type inference
+
+#+BEGIN_SRC elixir
+user.first_name # user :: %{:first_name => term(), ...}
+
+middle = person["middle_name"]
+# person :: %{optional("middle_name") => term(), ...} => %{...}
+# middle :: binary() or nil
+
+ashley = %{name: "Ashley", age: 42}
+# ashley :: %{:name => binary(), :age => integer()}
+#+END_SRC
+
+** Maps as ``records" and ``dictionaries"
+- sub-typing maps feels like structural sub-typing...
+
+#+BEGIN_SRC elixir
+ashley = %{name: "Ashley", age: 42}
+# ashley :: %{:name => binary(), :age => integer()}
+
+ashley_at_school = %{name: "Ashley", age: 42, gpa: 6.75}
+# ashley_at_school :: %{:name => binary(),
+#                       :age => integer(),
+#                       :gpa => float()}
+
+def enroll(%{name: _, age: _} = person) do ...
+#+END_SRC
+
+- the type system innovates semantic sub-typing to handle maps
+  + Castagna 2023
+
+** Gradual typing with =dynamic()=
+
+
+** Gradually introducing the system
+- don't discount the chance of a deal-breaker in prod code taking them back to the drawing board

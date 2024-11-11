@@ -104,7 +104,9 @@
 \setbeamerfont{itemize/enumerate subbody}{size=\large}
 \setbeamerfont{itemize/enumerate subsubbody}{size=\small}
 
-\setbeamerfont{normal text}{size=\tiny}
+% \setbeamerfont{normal text}{size=\large}
+\AtBeginDocument{\large}
+
 
 \usepackage{listings}
 \lstset{basicstyle=\small}
@@ -137,6 +139,8 @@
 
 
 \end{frame}
+
+\section{The Erlang Ecosystem}\label{the-erlang-ecosystem}
 
 \begin{frame}{What is the Erlang Ecosystem?}
 \phantomsection\label{what-is-the-erlang-ecosystem}
@@ -222,7 +226,8 @@ Built around a shared value in:
 \item
   simplicity
 \item
-  acknowledging the errors will occur so lets deal with them
+  acknowledging the errors will occur so let\textquotesingle s deal with
+  them
 
   \begin{itemize}
   \tightlist
@@ -232,21 +237,23 @@ Built around a shared value in:
 \end{itemize}
 \end{frame}
 
-\begin{frame}{Brief history of Erlang}
-\phantomsection\label{brief-history-of-erlang}
+\section{A brief history of Erlang}\label{a-brief-history-of-erlang}
+
+\begin{frame}{A brief history of Erlang}
+\phantomsection\label{a-brief-history-of-erlang-1}
 \centering
 covered in my 2013 talk, but tonight...
 \end{frame}
 
-\begin{frame}{Brief history of Erlang}
-\phantomsection\label{brief-history-of-erlang-1}
+\begin{frame}{A brief history of Erlang}
+\phantomsection\label{a-brief-history-of-erlang-2}
 \begin{center}
 \includegraphics[width=.5\textwidth]{./img/short_short.jpg}
 \end{center}
 \end{frame}
 
-\begin{frame}{Brief history of Erlang}
-\phantomsection\label{brief-history-of-erlang-2}
+\begin{frame}{A brief history of Erlang}
+\phantomsection\label{a-brief-history-of-erlang-3}
 \begin{itemize}
 \tightlist
 \item
@@ -258,6 +265,8 @@ covered in my 2013 talk, but tonight...
   \tightlist
   \item
     concurrent, fault-tolerant, distributed, soft real-time
+  \item
+    strong, dynamic typing, impure, functional, simple
   \item
     reports of 1200k LOC and ``nine nines" of uptime on the AXD301
     switch
@@ -271,6 +280,7 @@ covered in my 2013 talk, but tonight...
 
 \begin{figure}
 \centering
+\vspace{20pt}
 \begin{minipage}{.24\textwidth}
   \centering
   \includegraphics[width=.9\linewidth]{./img/joe.jpg}
@@ -289,6 +299,8 @@ covered in my 2013 talk, but tonight...
 \end{minipage}
 \end{figure}
 \end{frame}
+
+\section{The BEAM and OTP}\label{the-beam-and-otp}
 
 \begin{frame}{The BEAM}
 \phantomsection\label{the-beam}
@@ -316,7 +328,7 @@ covered in my 2013 talk, but tonight...
 \begin{itemize}
 \tightlist
 \item
-  Erlang\textquotesingle s "standard library"
+  Erlang\textquotesingle s ``standard library"
 \item
   dozens of modules providing various typical stdlib stuff
 \item
@@ -402,16 +414,19 @@ Elixir\ldots{}
 
 \begin{frame}{Marlow \& Wadler - 1997}
 \phantomsection\label{marlow-wadler---1997}
+\centering
+``We can stop waiting for functional languages to be used in practice--that day is here!"
+
 \begin{itemize}
 \tightlist
-\item
-  ``We can stop waiting for functional languages to be used in
-  practice--that day is here!"
 \item
   threw away Hindley-Milner: \(U = V\) -- this would not work with
   existing Erlang codebases
 \item
-  proposed strictly more general sub-typing instead: \(U \subseteq V\)
+  opted for strictly more general ``semantic sub-typing" instead:
+  \(U \subseteq V\)
+\item
+  (Aiken \& Wimmers - 1993)
 \end{itemize}
 \end{frame}
 
@@ -420,45 +435,294 @@ Elixir\ldots{}
 Developed by Meta for WhatsApp
 \end{frame}
 
-\begin{frame}{Typed BEAM languages with alternate semantics}
-\phantomsection\label{typed-beam-languages-with-alternate-semantics}
-\begin{itemize}
-\tightlist
-\item
-  Hamler - purescript for the BEAM
-\item
-  Caramel - ML for the BEAM
-\item
-  Gleam - HM-based type system - see my May 2024 talk
-\item
-  \ldots{}
-\end{itemize}
-\end{frame}
-
 \begin{frame}{Static analysis tools}
 \phantomsection\label{static-analysis-tools}
 \begin{itemize}
 \tightlist
 \item
-  dialyzer - Linhahl \& Sagonas, 2006
+  rely on the Erlang Typespec notation - not checked by compiler
 \item
-  gradualizer
+  dialyzer - success-typing - Linhahl \& Sagonas, 2006
+\item
+  gradualizer - gradual set-theoretic-inspired typing
 \end{itemize}
 \end{frame}
 
-\section{References}\label{references}
+\begin{frame}{Typed BEAM languages with alternate semantics}
+\phantomsection\label{typed-beam-languages-with-alternate-semantics}
+\begin{itemize}
+\tightlist
+\item
+  Hamler - PureScript for the BEAM
+\item
+  Caramel - ML for the BEAM
+\item
+  Gleam - Rust/Ocaml/Elm inspired - HM type system
+
+  \begin{itemize}
+  \tightlist
+  \item
+    see my May 2024 talk
+  \end{itemize}
+\item
+  \ldots{}
+\end{itemize}
+\end{frame}
+
+\section{Elixir\textquotesingle s Set-Theoretic Type
+System}\label{elixirs-set-theoretic-type-system-7}
+
+\begin{frame}{Goal}
+\phantomsection\label{goal}
+\begin{itemize}
+\tightlist
+\item
+  works on existing Elixir code-bases
+\item
+  need range of techniques to give system a chance of being adopted
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Features of the type system}
+\phantomsection\label{features-of-the-type-system}
+\begin{itemize}
+\tightlist
+\item
+  semantic sub-typing hence set-theoretic
+\item
+  polymorphic with local type inference
+
+  \begin{itemize}
+  \tightlist
+  \item
+    type variables
+  \item
+    requires some type annotations--but not everywhere
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Semantic sub-typing}
+\phantomsection\label{semantic-sub-typing}
+\begin{itemize}
+\tightlist
+\item
+  establish sub-typing relationships between types based on the semantic
+  meaning of values of the types
+\item
+  semantic meaning derived from treating types as sets, values as set
+  members
+\item
+  set operations on types: union, intersection, and negation
+\item
+  in comparison to Hindley-Milner, relax \(U = V\) to \(U \subseteq V\)
+\item
+  strictly more general - an extension to HM
+\item
+  Frish et. al. referencing Aiken \& Wimmers (also ref. by Marlow \&
+  Wadler)
+\item
+  good idea because dynamically-typed languages variables can hold
+  different types at run-time: hence union-ing
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Polymorphic with local type inference}
+\phantomsection\label{polymorphic-with-local-type-inference}
+\begin{itemize}
+\tightlist
+\item
+  type variables: \passthrough{\lstinline!a, b!} - no parentheses
+\item
+  local type inference
+
+  \begin{itemize}
+  \tightlist
+  \item
+    functions must have type annotations
+  \item
+    types are inferred for arguments and return types
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}[fragile]{Polymorphic with local type inference}
+\phantomsection\label{polymorphic-with-local-type-inference-1}
+\begin{lstlisting}
+$ (list(a), a -> b) -> list(b)
+def map([], _), do: []
+def map([x | xs], f), do:  [f.(x) | map(xs, f)]
+
+x = map([1, 2, 3], &double/1)
+# type system infers type of double and x
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Guards and pattern-matching}
+\phantomsection\label{guards-and-pattern-matching}
+\begin{itemize}
+\tightlist
+\item
+  Elixir has rich run-time testing of types
+\item
+  the type system can type captured variables and variables in guards
+\end{itemize}
+
+\begin{lstlisting}
+def elem_at([x | rest] = xs, pos) when is_integer(pos) do...
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Guards and pattern-matching}
+\phantomsection\label{guards-and-pattern-matching-1}
+\begin{itemize}
+\tightlist
+\item
+  ``type narrowing" can check exhaustiveness of case expressions
+\item
+  type system is conservative: case branches must handle
+  \passthrough{\lstinline!xs!} being any map or list
+\end{itemize}
+
+\begin{lstlisting}
+def elem_at(xs, pos) when is_map(xs) or is_list(x) do
+  case xs do
+    %{} -> # get for map
+    [] -> # get for list
+    _ -> # redundant
+  end
+end
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Maps as ``records" and ``dictionaries"}
+\phantomsection\label{maps-as-records-and-dictionaries}
+\begin{itemize}
+\tightlist
+\item
+  maps can represent records, dictionaries, and structs
+\end{itemize}
+
+\begin{lstlisting}
+ashley = %{name: "Ashley", age: 42}
+# ashley :: %{:name => binary(), :age => integer()}
+
+words = "The Elixir Type System ..."
+word_count = wc(words) # :: %{optional(binary()) => integer()}
+word_count["Elixir"] # 42
+
+defstruct [:id , name: "", age: 0]
+# %{
+#   :__struct__ => :"User",
+#   :id => term(),
+#   :name => binary(),
+#   :age => integer()
+# }
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Maps as ``records" and ``dictionaries"}
+\phantomsection\label{maps-as-records-and-dictionaries-1}
+\begin{itemize}
+\tightlist
+\item
+  the type system treats maps as open or closed
+
+  \begin{itemize}
+  \tightlist
+  \item
+    open means there are potentially unknown keys
+  \end{itemize}
+\item
+  strict or dynamic access changes type inference
+\end{itemize}
+
+\begin{lstlisting}
+user.first_name # user :: %{:first_name => term(), ...}
+
+middle = person["middle_name"]
+# person :: %{optional("middle_name") => term(), ...} => %{...}
+# middle :: binary() or nil
+
+ashley = %{name: "Ashley", age: 42}
+# ashley :: %{:name => binary(), :age => integer()}
+\end{lstlisting}
+\end{frame}
+
+\begin{frame}[fragile]{Maps as ``records" and ``dictionaries"}
+\phantomsection\label{maps-as-records-and-dictionaries-2}
+\begin{itemize}
+\tightlist
+\item
+  sub-typing maps feels like structural sub-typing\ldots{}
+\end{itemize}
+
+\begin{lstlisting}
+ashley = %{name: "Ashley", age: 42}
+# ashley :: %{:name => binary(), :age => integer()}
+
+ashley_at_school = %{name: "Ashley", age: 42, gpa: 6.75}
+# ashley_at_school :: %{:name => binary(),
+#                       :age => integer(),
+#                       :gpa => float()}
+
+def enroll(%{name: _, age: _} = person) do ...
+\end{lstlisting}
+
+\begin{itemize}
+\tightlist
+\item
+  the type system innovates semantic sub-typing to handle maps
+
+  \begin{itemize}
+  \tightlist
+  \item
+    Castagna 2023
+  \end{itemize}
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Gradual typing with \passthrough{\lstinline!dynamic()!}}
+\phantomsection\label{gradual-typing-with-dynamic}
+\end{frame}
+
+\begin{frame}{Gradually introducing the system}
+\phantomsection\label{gradually-introducing-the-system}
+\begin{itemize}
+\tightlist
+\item
+  don\textquotesingle t discount the chance of a deal-breaker in prod
+  code taking them back to the drawing board
+\end{itemize}
+\end{frame}
 
 \begin{frame}{References}
-Simon Marlow and Philip Wadler. A practical subtyping system for erlang.
-In Proceedings of the Second ACM SIGPLAN International Conference on
-Functional Programming, ICFP '97, page 136--149, New York, NY, USA,
-1997. Association for Computing Machinery.
-\url{doi:10.1145/258948.258962}.
+\phantomsection\label{references}
+Aiken, A. and Wimmers, E. L. 93. Type inclusion constraints and type
+inference. In Proceed- ings of the Seventh ACM Conference on Functional
+Programming and Computer Architecture. Copenhagen, Denmark, 31--41
+
+Giuseppe Castagna. Typing records, maps, and structs. Proc. ACM Program.
+Lang., 7(ICFP), September 2023. \url{doi:10.1145/3607838}.
+
+Alain Frisch, Giuseppe Castagna, and Véronique Benzaken. Semantic
+subtyping: dealing set-theoretically with function, union, intersection,
+and negation types. Journal of the ACM, 55(4):1--64, 2008.
+\url{doi:10.1145/1391289.1391293}
 
 Tobias Lindahl and Konstantinos Sagonas. Practical type inference based
 on success typings. In ACM-SIGPLAN International Conference on
 Principles and Practice of Declarative Programming, 2006.
 \url{doi:10.1145/1140335.1140356}.
+\end{frame}
+
+\begin{frame}{References}
+\phantomsection\label{references-1}
+Simon Marlow and Philip Wadler. A practical subtyping system for erlang.
+In Proceedings of the Second ACM SIGPLAN International Conference on
+Functional Programming, ICFP '97, page 136--149, New York, NY, USA,
+1997. Association for Computing Machinery.
+\url{doi:10.1145/258948.258962}.
 \end{frame}
 
 \begin{frame}{Thank you}

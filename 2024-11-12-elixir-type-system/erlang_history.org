@@ -1,10 +1,12 @@
-** Brief history of Erlang
+* A brief history of Erlang
+
+** A brief history of Erlang
 #+BEGIN_EXPORT latex
 \centering
 covered in my 2013 talk, but tonight...
 #+END_EXPORT
 
-** Brief history of Erlang
+** A brief history of Erlang
 
 #+BEGIN_EXPORT latex
   \begin{center}
@@ -12,11 +14,12 @@ covered in my 2013 talk, but tonight...
   \end{center}
 #+END_EXPORT
 
-** Brief history of Erlang
+** A brief history of Erlang
 
 - developed in the mid 1980s at Ericsson
 - to run on next generation telephone switches
   + concurrent, fault-tolerant, distributed, soft real-time
+  + strong, dynamic typing, impure, functional, simple
   + reports of 1200k LOC and ``nine nines" of uptime on the AXD301 switch
   + reports of market penetration of > 50% in mobile telephony switches
 - solved web-scale in the '80s
@@ -24,6 +27,7 @@ covered in my 2013 talk, but tonight...
 #+BEGIN_EXPORT latex
 \begin{figure}
 \centering
+\vspace{20pt}
 \begin{minipage}{.24\textwidth}
   \centering
   \includegraphics[width=.9\linewidth]{./img/joe.jpg}

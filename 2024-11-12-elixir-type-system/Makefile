@@ -10,6 +10,7 @@ bfpg_pdf: bfpg.org
 	pandoc --standalone --slide-level=2 --to beamer \
 		--pdf-engine=xelatex \
 		-H preamble.tex \
+		-V theme:default -V colortheme:default \
 		-V 'mainfont:Atkinson-Hyperlegible-Regular-102.ttf' \
 		-V 'mainfontoptions:Path=../common/fonts/' \
 		-V 'monofont:FiraCode-Regular.ttf' \

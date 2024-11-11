@@ -1,3 +1,5 @@
+* The BEAM and OTP
+
 ** The BEAM
 
 - Erlang's virtual machine / runtime system
@@ -11,7 +13,7 @@
 
 ** The OTP libraries
 
-- Erlang's "standard library"
+- Erlang's ``standard library"
 - dozens of modules providing various typical stdlib stuff
 - core of which are for supervision trees
   + =gen_server= - actors / workers

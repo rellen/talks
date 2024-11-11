@@ -24,6 +24,8 @@
 
 #+INCLUDE: "./beam_types.org"
 
+#+INCLUDE: "./elixir_type_system.org"
+
 #+INCLUDE: "./references.org"
 
 ** Thank you

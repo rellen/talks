@@ -1,3 +1,5 @@
+* The Erlang Ecosystem
+
 ** What is the Erlang Ecosystem?
 
 A group of languages, libraries, frameworks, and applications that are implemented on top of the Erlang virtual machine, the BEAM.
@@ -78,5 +80,5 @@ Built around a shared value in:
 - massive concurrency
 - fault-tolerance
 - simplicity
-- acknowledging the errors will occur so lets deal with them
+- acknowledging the errors will occur so let's deal with them
   + ``Let it crash"--have a plan to restart sub-systems when they crash
