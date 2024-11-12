@@ -30,8 +30,18 @@
 
 #+INCLUDE: "./elixir_type_system.org"
 
+** Demo time!
+
+** Conclusion
+
+- Static Type Systems Now! (or soon)
+- innovations on semantic subtyping / set-theoretic type
+- incremental release--stick with dialyzer for now and hope for a migration tool
+
 #+INCLUDE: "./references.org"
 
 ** Thank you
 
-I'll post slides soon.
+I'll post slides somewhere (luma/discord/?) soon.
+
+For my other talks as well...
