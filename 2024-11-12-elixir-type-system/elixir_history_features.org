@@ -1,7 +1,5 @@
 ** Elixir
 
-There will be some comparing and contrasting of Gleam with Elixir...
-
 #+BEGIN_EXPORT latex
   \begin{center}
   \includegraphics[width=.5\textwidth]{./img/elixir_logo.png}

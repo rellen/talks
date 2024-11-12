@@ -198,12 +198,13 @@ $ (integer() -> integer()) and (boolean() -> boolean())
 ** Polymorphic with local type inference
 
 #+BEGIN_SRC elixir
-$ (list(a), a -> b) -> list(b)
+$ (list(a), a -> b) -> list(b) when a: term(), b: term()
 def map([], _), do: []
 def map([x | xs], f), do:  [f.(x) | map(xs, f)]
 
 x = map([1, 2, 3], &double/1)
 # type system infers type of double and x
+# a and b are infered to be integer()
 #+END_SRC
 
 ** Guards and pattern-matching

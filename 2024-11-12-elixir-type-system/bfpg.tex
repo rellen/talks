@@ -377,9 +377,6 @@ covered in my 2013 talk, but tonight...
 
 \begin{frame}{Elixir}
 \phantomsection\label{elixir}
-There will be some comparing and contrasting of Gleam with
-Elixir\ldots{}
-
 \begin{center}
 \includegraphics[width=.5\textwidth]{./img/elixir_logo.png}
 \end{center}
@@ -821,12 +818,13 @@ $ (integer() -> integer()) and (boolean() -> boolean())
 \begin{frame}[fragile]{Polymorphic with local type inference}
 \phantomsection\label{polymorphic-with-local-type-inference-1}
 \begin{lstlisting}
-$ (list(a), a -> b) -> list(b)
+$ (list(a), a -> b) -> list(b) when a: term(), b: term()
 def map([], _), do: []
 def map([x | xs], f), do:  [f.(x) | map(xs, f)]
 
 x = map([1, 2, 3], &double/1)
 # type system infers type of double and x
+# a and b are infered to be integers
 \end{lstlisting}
 \end{frame}
 
