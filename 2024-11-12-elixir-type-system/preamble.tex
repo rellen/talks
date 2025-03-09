@@ -1,0 +1,28 @@
+\setbeamersize{text margin left=0.35cm}
+\setbeamersize{text margin right=0.35cm}
+
+\definecolor{peach}{HTML}{EDD1B0}
+\setbeamercolor{background canvas}{bg=peach}
+
+
+\let\oldverbatim\verbatim
+\let\oldendverbatim\endverbatim
+\renewenvironment{verbatim}{\scriptsize\oldverbatim}{\oldendverbatim}
+
+% \renewenvironment{Shaded}{\begin{snugshade}\footnotesize}{\end{snugshade}}
+
+\setbeamertemplate{itemize item}{>}
+\setbeamertemplate{itemize subitem}{--}
+
+\setbeamerfont{itemize/enumerate body}{size=\large}
+\setbeamerfont{itemize/enumerate subbody}{size=\large}
+\setbeamerfont{itemize/enumerate subsubbody}{size=\small}
+
+% \setbeamerfont{normal text}{size=\large}
+\AtBeginDocument{\large}
+
+
+\usepackage{listings}
+\lstset{basicstyle=\small}
+
+\setbeamertemplate{footline}[page number]

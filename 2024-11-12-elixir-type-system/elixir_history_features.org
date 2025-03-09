@@ -1,0 +1,33 @@
+** Elixir
+
+#+BEGIN_EXPORT latex
+  \begin{center}
+  \includegraphics[width=.5\textwidth]{./img/elixir_logo.png}
+  \end{center}
+#+END_EXPORT
+
+** Brief history of Elixir
+
+- created by José Valim starting in 2012
+- inspired by Erlang, Ruby, and, to a lesser extent, Lisp
+- like Erlang, the language is quite stable, imminent release of v1.18
+- has gone from web applications to embedded systems and numerical analysis and ML/AI
+
+#+BEGIN_EXPORT latex
+  \begin{center}
+  \includegraphics[width=.5\textwidth]{./img/elixir_logo.png}
+  \end{center}
+#+END_EXPORT
+
+** Features of Elixir
+
+- Ruby-like syntax while retaining most of Erlang's semantics
+  + ..., immutable data, HoF, side-effects anywhere, dynamically-typed, ...
+- interoperate with Erlang
+- hygienic macros
+- ad-hoc polymorhism with protocols
+- highly ergonomic build tool: ~mix~
+- modern package manager: ~hex~
+- excellent unit test tool: exunit
+- opinionated formatter
+- did I mention dynamically-typed?

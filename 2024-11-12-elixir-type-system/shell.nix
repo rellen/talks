@@ -2,11 +2,26 @@
 let
     inherit (pkgs.lib) optional optionals;
     erlang = pkgs.beam.interpreters.erlang_27;
-    elixir = pkgs.beam.packages.erlang_27.elixir_1_17;
+    #elixir = pkgs.beam.packages.erlang_27.elixir_1_18;
+    # Custom Elixir package
+    elixir = pkgs.beam.packages.erlang_27.elixir.overrideAttrs (oldAttrs: {
+      version = "1.18.0-dev";
+      src = pkgs.fetchFromGitHub {
+        owner = "elixir-lang";
+        repo = "elixir";
+        # Replace with desired commit hash
+        rev = "main";
+        sha256 = "sha256-8pbAD49FkdD0k+DgvkvBBGbjIJ90CYsIoXqDmp1sNbQ=";
+      };
+    });
 
 in pkgs.mkShell rec {
-  name = "1.17 R27";
+  name = "1.18 R27";
   buildInputs = with pkgs; [
+    (texlive.combine { inherit (texlive) scheme-full; })
+    typst
+    typst-lsp
+    typstyle
     rebar
     rebar3
     erlang

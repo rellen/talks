@@ -1,0 +1,47 @@
+#+TITLE: Elixir's Set-Theoretic Type System
+#+AUTHOR: Robert Ellen
+#+DATE: 2024/11/12
+
+#+INCLUDE: "./headers.org"
+
+** Summary
+
+- Q: ..., A: ``A static type system!"
+- rich history of static type systems for BEAM languages
+- R&D project to build the definitive static type system for Elixir
+- gradual semantic subtyping with innovations for Elixir's features
+- gradual introduction into production Elixir compiler
+
+** Disclaimer
+
+- I am not a student of programming language / type theory
+- mistakes are my own
+- check out the paper and references
+
+#+INCLUDE: "./erlang_ecosystem.org"
+
+#+INCLUDE: "./erlang_history.org"
+
+#+INCLUDE: "./beam_otp.org"
+
+#+INCLUDE: "./elixir_history_features.org"
+
+#+INCLUDE: "./beam_types.org"
+
+#+INCLUDE: "./elixir_type_system.org"
+
+** Demo time!
+
+** Conclusion
+
+- Static Type Systems Now! (or soon)
+- innovations on semantic subtyping / set-theoretic type
+- incremental release--stick with dialyzer for now and hope for a migration tool
+
+#+INCLUDE: "./references.org"
+
+** Thank you
+
+I'll post slides somewhere (luma/discord/?) soon.
+
+For my other talks as well...

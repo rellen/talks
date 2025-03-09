@@ -1,0 +1,84 @@
+* The Erlang Ecosystem
+
+** What is the Erlang Ecosystem?
+
+A group of languages, libraries, frameworks, and applications that are implemented on top of the Erlang virtual machine, the BEAM.
+
+Languages include:
+
+#+BEGIN_EXPORT latex
+\begin{figure}
+\centering
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/erlang_logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/elixir-vertical.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/lucy.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/lfe.png}
+\end{minipage}
+\end{figure}
+#+END_EXPORT
+
+...plus dozens more
+
+** What is the Erlang Ecosystem?
+
+Libraries and frameworks include:
+
+#+BEGIN_EXPORT latex
+\begin{figure}
+\centering
+\begin{minipage}{.24\textwidth}
+  \centering
+ \LARGE{OTP}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/rabbitmq_logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/phoenix_logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/ecto_logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+\centering
+  \includegraphics[width=.8\linewidth]{./img/absinthe_logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+\centering
+  \includegraphics[width=.8\linewidth]{./img/oban-logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.7\linewidth]{./img/nx_logo.png}
+\end{minipage}
+\begin{minipage}{.24\textwidth}
+  \centering
+  \includegraphics[width=.8\linewidth]{./img/ash-logo.png}
+\end{minipage}
+\end{figure}
+#+END_EXPORT
+
+
+** What is the Erlang Ecosystem?
+
+Built around a shared value in:
+
+- massive concurrency
+- fault-tolerance
+- simplicity
+- acknowledging the errors will occur so let's deal with them
+  + ``Let it crash"--have a plan to restart sub-systems when they crash

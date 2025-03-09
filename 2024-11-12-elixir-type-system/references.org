@@ -1,0 +1,31 @@
+** References
+
+Aiken, A. and Wimmers, E. L. 93. Type inclusion constraints and type inference. In Proceed-
+ings of the Seventh ACM Conference on Functional Programming and Computer Architecture.
+Copenhagen, Denmark, 31–41
+
+Giuseppe Castagna. Typing records, maps, and structs. Proc. ACM Program.
+Lang., 7(ICFP), September 2023. doi:10.1145/3607838.
+
+Giuseppe Castagna, Guillaume Duboc, and José Valim. The Design Principles of the Elixir Type System
+The Art, Science, and Engineering of Programming, 2024, Vol. 8, Issue 2, Article 4
+https://doi.org/10.22152/programming-journal.org/2024/8/4
+
+Alain Frisch, Giuseppe Castagna, and Véronique Benzaken. Semantic subtyping:
+dealing set-theoretically with function, union, intersection, and negation types.
+Journal of the ACM, 55(4):1–64, 2008. doi:10.1145/1391289.1391293
+
+** References
+
+Tobias Lindahl and Konstantinos Sagonas. Practical type inference based on
+success typings. In ACM-SIGPLAN International Conference on Principles and
+Practice of Declarative Programming, 2006. doi:10.1145/1140335.1140356.
+
+Simon Marlow and Philip Wadler. A practical subtyping system for erlang. In
+Proceedings of the Second ACM SIGPLAN International Conference on Functional
+Programming, ICFP ’97, page 136–149, New York, NY, USA, 1997. Association
+for Computing Machinery. doi:10.1145/258948.258962.
+
+Jeremy G. Siek and Walid Taha. Gradual typing for functional languages. In
+Scheme and Functional Programming Workshop, University of Chicago Technical
+Report TR-2006-06, pages 81–92, 2006.

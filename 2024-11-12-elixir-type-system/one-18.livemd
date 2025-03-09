@@ -1,0 +1,408 @@
+# Elixir 1.17 Typechecker
+
+```elixir
+System.version() |> IO.inspect(label: "Elixir")
+:erlang.system_info(:otp_release) |> IO.chardata_to_string() |> IO.inspect(label: "OTP")
+Node.self() |> IO.inspect(label: "Node")
+:ok
+```
+
+## Examples
+
+Type annotations of functions are not available in this stage in the roadmap
+
+```elixir
+def NoAnnotation do
+  $ (integer() -> integer()) and (boolean() -> boolean())
+  def negate(x) when is_integer(x), do: -x
+  def negate(x) when is_boolean(x), do: not x
+end
+```
+
+Local type inference for some variables and functions is implemented
+
+```elixir
+defmodule LocalInference do
+  def local() do
+    x = nil
+    y = %{foo: "foo", bar: "bar"} |> Map.delete(:bar)
+    x + y
+  end
+end
+```
+
+Type inference using guards is not implemented
+
+```elixir
+defmodule Guards do
+  def negate(x) when is_integer(x), do: "-" <> x
+  def negate(x) when is_boolean(x), do: not x
+  def subtract(x, y) do
+    x + negate(y)
+  end
+end
+```
+
+But it is implemented for patterns
+
+```elixir
+defmodule Patterns do
+  def patterns1(%{foo: _} = xs) do
+    case xs do
+      %{foo: %{} = foo} -> foo + 1 
+      [_ | rest] -> rest
+    end
+  end
+
+  def patterns2(%{} = xs) do
+    case xs do
+      %{} -> Map.keys(xs) 
+      _ -> :nil # redundant
+    end
+  end
+end
+```
+
+Module-local inference should work but does not...
+
+```elixir
+defmodule ModLocal do
+  def local(), do: :foo
+  
+  def run() do
+    foo = local()
+    :bar = foo
+  end
+end
+```
+
+## Type modelling
+
+Firstly, let's look at the types as they are modelled in the Elixir 1.17 type system.
+
+Here we intentionally do bad matches to show the warnings emitted by the typechecker.
+
+Note: most of these "type errors" would be detected in Elixir 1.16 but we get "better" warnings now.
+
+```elixir
+defmodule ModelledTypes do
+  def match1() do
+    name = "Ashley"
+    age = 42
+    ^name = age
+  end
+
+  def match2() do
+    ashley = "Ashley"
+    brooklyn = "Brooklyn"
+    ^ashley = brooklyn
+  end
+
+  def match3({dislike, value}) do
+    likes = ["programming language theory", "cat memes"]
+    dislikes = %{dislike => value, dynamic_typing: true, pineapple_on_pizza: 200 / 2}
+    ^likes = dislikes
+  end
+  
+  def match4() do
+    ashley_dob = %Date{} = ~D[1982-07-24]
+    brooklyn_dob = %DateTime{} = ~U[1982-07-24 10:00:00Z]
+    ^ashley_dob = brooklyn_dob
+  end
+
+  # match5 is the only function that would not warn in v1.16
+  def match5() do
+    brooklyn = {"Brooklyn", 42.0}
+    increase_age = fn {name, age} -> {name, age + 0.1} end
+    ^brooklyn = increase_age
+  end
+end
+```
+
+## Maps
+
+Maps can be "open" or "closed".
+
+"Closed" maps are those where all keys and value types are known statically.
+
+"Open" maps may have optional extra key-value elements.
+
+The typechecker can warn on the access of a non-existent key of a "closed" map ***using dot-syntax***.
+
+```elixir
+defmodule MapKeys do
+  def non_existent_key1() do
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley.last_name # would be a runtime error
+    :ok
+  end
+  
+  def non_existent_key2() do
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley[:last_name] # nil
+    :ok
+  end
+
+  def non_existent_key3() do
+    ashley = %{first_name: "Ashley", age: 42}
+    %{last_name: _last_name} = ashley # open vs closed
+    :ok
+  end
+  
+  def non_existent_key4() do
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley1 = Map.put(ashley, :occupation, "software developer")
+    ashley1.last_name # dialyzer catches this
+    :ok
+  end
+
+  def non_existent_key5() do
+    foo = :bar
+    ashley = %{first_name: "Ashley", age: 42}
+    ashley = %{ashley | hobby: "cooking"} #?? runtime error + dialyzer
+    ^foo = ashley
+    ashley.last_name
+    :ok
+  end
+
+   def maybe_non_existent_key(%{first_name: _first_name, age: _age} = params) do
+    foo = :bar
+    ^foo = params # just here to show that params is an "open" map
+    params.last_name
+    :ok
+  end 
+end
+```
+
+## Structs
+
+In the Elixir 1.17 typechecker, **structs** are considered *closed maps* containing the `__struct__` key.
+
+The typechecker can therefore infer the keys and value types of structs that are pattern matched in a function body or its arguments.
+
+<!-- livebook:{"break_markdown":true} -->
+
+Let's consider this struct module in the following examples.
+
+```elixir
+defmodule Person do
+  
+  defstruct [:first_name, :age]
+  
+  @type t :: %__MODULE__{first_name: String.t(), age: integer()}
+
+  def build_person(first_name, age) do
+    %Person{first_name: first_name, age: age}
+  end
+end
+```
+
+We get warnings if a non-existent key is accessed, or a value is used in a type-incompatible way.
+
+Again, all these errors would have been detected in Elixir 1.16.
+
+```elixir
+defmodule StructKeys1 do
+  
+  def non_existent_key() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley.last_name
+    :ok
+  end
+  
+  def non_existent_key2() do
+    ashley = %Person{}
+    ashley.last_name
+    :ok
+  end
+
+  def value_type() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley.age <> "1"
+    :ok
+  end
+end
+```
+
+The typechecker does not consider type specifications when typing function arguments.
+
+For the type to be infered, *it must be pattern-matched*.  
+**But only within the same function - the typechecker cannot infer the return-type of functions.**
+Elixir 1.16 finds these errors, too.
+
+```elixir
+defmodule StructKeys2 do  
+  
+  @spec struct_arg1(Person.t()) :: :ok
+  def struct_arg1(person) do
+    person.last_name # dialyzer catches this
+    :ok
+  end
+
+  def struct_arg2(%Person{} = person) do
+    person.last_name
+    :ok
+  end
+
+  def no_inference() do
+    # build_person => %Person{first_name: first_name, age: age}
+    person = Person.build_person("Ashley", 42)
+    person.last_name # dialyzer catches this 
+    :ok
+  end
+  
+  def no_inference2() do
+    person = %Person{} = Person.build_person("Ashley", 42)
+    person.last_name
+    :ok
+  end
+
+  def not_a_person(), do: :not_a_person
+
+  def no_inference3() do
+    person = %Person{} = not_a_person()
+    person.first_name # dialyzer catches this
+    :ok
+  end
+end
+```
+
+## No inference given function args outside of function
+
+As we saw in the `no_inference*()` functions in the previous code block, there's no inference of types of values returned from functions.
+
+Similarly, there's no inference of types given pattern matches on function arguments between different functions.
+
+```elixir
+defmodule NoInference do
+  defmodule Foo do
+    defstruct [:foo]
+  end
+  defmodule Bar do
+    defstruct [:bar]
+  end
+  defmodule Blah do
+    defstruct [:blah]
+  end
+
+  @spec do_something(%Foo{} | %Bar{}) :: :ok
+  def do_something(%Foo{} = f), do: IO.inspect(f.foo); :ok
+  def do_something(%Bar{} = b), do: IO.inspect(b.bar); :ok
+
+  def call_do_something() do
+    do_something(%Blah{blah: "blah"}) # dialyzer catches this
+  end
+
+  # $ negate ::  ((integer() -> integer() and boolean() -> boolean())
+  # def negate(x) when integer()
+  # def negate(x) when boolean()
+end
+```
+
+## Functions
+
+The Elixir 1.17 typechecker can infer misuse of functions and function-call syntax.
+
+```elixir
+defmodule Functions do
+  def call_on_unknown_value(arg) do
+    arg.my_fun() # dialyzer accepts this
+    arg.() # dialyzer catches this because it contradicts the previous line
+    
+    # Function application will fail, 
+    # because _arg :: atom() | %{:my_fun => _, _ => _} is not a function of arity 0.
+  end
+
+  def call_on_non_module() do
+    value = 2
+    value.my_fun() # warns in v1.16
+  end
+
+  def call_on_non_function() do
+    value = 2
+    value.() # warns in v1.16
+  end
+
+  def bad_call_on_module() do
+    mod = Person
+    mod.bad("Ashley", 42)
+  end
+
+  def bad_call_on_module2() do
+    # type-checks - no return-type inference, remember?
+    mod = String.to_atom("Person")
+    mod.bad("Ashley", 42)
+  end
+
+  
+end
+```
+
+## Comparisons
+
+The typechecker warns if there is a comparison between type-incompatible values.
+
+`==` and `===` are not considered comparisons.
+
+`integer()` and `float()` are considered type-compatible.
+
+```elixir
+defmodule ValueComparisons do
+  def compare_ages() do
+    ashley_age = 42
+    brooklyn_age = "42"
+    brooklyn_name = "Brooklyn"
+    IO.inspect(ashley_age > brooklyn_age, label: "greater than?")
+    IO.inspect(ashley_age == brooklyn_age, label: "equal?") # false
+    IO.inspect(ashley_age === brooklyn_age, label: "triple equal?") # false
+    IO.inspect(ashley_age == brooklyn_name, label: "equal?") # false
+    # dialyzer knows the last three lines are contradictions
+    :ok
+  end
+
+  def compare_ages2() do
+    ashley_age = 42
+    brooklyn_age = 42.0
+    IO.inspect(ashley_age > brooklyn_age, label: "greater than?") # false
+    IO.inspect(ashley_age == brooklyn_age, label: "WAT?") # true
+    IO.inspect(ashley_age === brooklyn_age, label: "triple WAT?") # false
+    :ok
+  end
+end
+```
+
+```elixir
+ValueComparisons.compare_ages()
+```
+
+```elixir
+ValueComparisons.compare_ages2()
+```
+
+## Struct Comparisons
+
+If one or more structs are involved in a comparision, the typechecker warns - even if the comparision *could* make sense.
+
+```elixir
+defmodule StructComparisons do
+  def compare_structs() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_too = %{first_name: "Ashley", age: 42}
+    IO.inspect(ashley > ashley_too, label: "greater than?")
+  end
+
+  def compare_structs2() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_older = %Person{first_name: "Ashley", age: 43}
+    IO.inspect(ashley_older > ashley, label: "greater than?")
+  end
+  
+  def compare_structs3() do
+    ashley = %Person{first_name: "Ashley", age: 42}
+    ashley_too = %Person{first_name: "Ashley", age: 42}
+    IO.inspect(ashley > ashley_too, label: "head like a hole-driven development")
+  end
+end
+```
+
+## Fin
