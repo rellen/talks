@@ -31,8 +31,13 @@ It's an Embedded Domain Specific Language (EDSL) for transforming inputs into we
 
 <!-- reset_layout -->
 
+-----
+
+# Summary
+
 Hakyll uses an applicative/monadic style that is both clean and potentially daunting to work with for Haskell novices*.
 
+<!-- pause -->
 Remove the mystery of the "Module Zoo":
 - reading the tutorials
 - chatting with LLMs and searching Hoogle to understand the typeclass instances used in the `hakyll-init` starter code
@@ -46,12 +51,15 @@ Then it's very much like many other SSGs.
 
 What is a Haskell novice?
 
+<!-- pause -->
+
 - not fluent in monads other than the basics like `List` and `Maybe`
 - not fluent in 
   - `newtype SomeMonad a = SomeMonad {run/un :: F(..., a, ...)}` or 
   - `data SomeMonad a = SomeMonad (F(..., a, ...))`
 
 <!-- pause -->
+
 Such a novice *could* still have developed programs in Haskell that were used at Australia's largest brewery. 
 
 -----
@@ -70,6 +78,7 @@ _____
 
 - configuration through Haskell code
 - primarily concerned with transforming source files to output files
+<!-- pause -->
 - good starting point: `hakyll-init`
 
 ```haskell
@@ -161,17 +170,28 @@ create ["archive.html"] $ do
 
 - Hakyll is well-documented
 - the DSL and tooling is great!
-- the DSL and workflow is cryptic to begin with
+- the DSL and workflow is cryptic to get started with
 
 -----
 
 ## Delighters
 
+<!-- column_layout: [3, 1] -->
+<!-- column: 0 -->
 - as we learnt from Joe Armstrong in 1986:
 > "declarative programming languages have several advantages over traditional languages"
+
+<!-- column: 1 -->
+
+![image:width:99%](joe.png)
+
+<!-- reset_layout -->
+<!-- pause -->
 - separation of templates, content, and logic
   - allows `cabal run site watch` to rebuild on changes to templates and content
+<!-- pause -->
 - super declarative and pipeliny at first glance
+<!-- pause -->
 ```haskell
 match "posts/*" $ do
   route $ setExtension "html"
@@ -187,6 +207,7 @@ match "posts/*" $ do
 ## Delighters
   
 - `hakyll-init` is a great starting point - almost no customisation needed to get a site going
+<!-- pause -->
 - great documentation and examples
   - tutorial series
   - Brent Yorgey's "A guide to the Hakyll module zoo"
@@ -198,6 +219,7 @@ match "posts/*" $ do
 
 - it's Haskell, not just a configuration file
   - yes I know that can be the same thing!
+<!-- pause -->
 - monads!
 - debugging?
 - cryptic error messages :(
