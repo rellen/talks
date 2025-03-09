@@ -9,6 +9,65 @@ Node.self() |> IO.inspect(label: "Node")
 :ok
 ```
 
+## Examples
+
+Local type inference for some variables and functions is implemented
+
+```elixir
+defmodule LocalInference do
+  def local() do
+    x = nil
+    y = %{foo: "foo", bar: "bar"} |> Map.delete(:bar)
+    x + y
+  end
+end
+```
+
+Type inference using guards is not implemented
+
+```elixir
+defmodule Guards do
+  def negate(x) when is_integer(x), do: "-" <> x
+  def negate(x) when is_boolean(x), do: not x
+  def subtract(x, y) do
+    x + negate(y)
+  end
+end
+```
+
+But it is implemented for patterns
+
+```elixir
+defmodule Patterns do
+  def patterns1(%{foo: _} = xs) do
+    case xs do
+      %{foo: %{} = foo} -> foo + 1 
+      [_ | rest] -> rest
+    end
+  end
+
+  def patterns2(%{} = xs) do
+    case xs do
+      %{} -> Map.keys(xs) 
+      _ -> :nil # redundant
+    end
+  end
+end
+```
+
+Module-local inference should work but does not...
+
+```elixir
+defmodule ModLocal do
+  def local(), do: :foo
+  
+  def run() do
+    foo = local()
+    :bar = foo
+  end
+end
+```
+
 ## Type modelling
 
 Firstly, let's look at the types as they are modelled in the Elixir 1.17 type system.
@@ -214,8 +273,8 @@ defmodule NoInference do
   defmodule Bar do
     defstruct [:bar]
   end
-  defmodule Baz do
-    defstruct [:baz]
+  defmodule Blah do
+    defstruct [:blah]
   end
 
   @spec do_something(%Foo{} | %Bar{}) :: :ok
@@ -223,12 +282,12 @@ defmodule NoInference do
   def do_something(%Bar{} = b), do: IO.inspect(b.bar); :ok
 
   def call_do_something() do
-    do_something(%Baz{baz: "baz"}) # dialyzer catches this
+    do_something(%Blah{blah: "blah"}) # dialyzer catches this
   end
 
-  $ negate ::  ((integer() -> integer() and boolean() -> boolean())
-  def negate(x), when integer()
-  def negate(x), when boolean()
+  # $ negate ::  ((integer() -> integer() and boolean() -> boolean())
+  # def negate(x) when integer()
+  # def negate(x) when boolean()
 end
 ```
 
