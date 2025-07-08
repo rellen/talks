@@ -69,7 +69,7 @@ Such a novice *could* still have developed programs in Haskell that were used at
 - The Hakyll EDSL for static websites
 - Delights and hardships for the novice Haskeller
 - How it works under the hood
-- Conclusion
+- Interactive demo
 - Q&A
 
 _____
@@ -128,6 +128,7 @@ route $ setExtension "html"
 route $ customRoute $ (++ "/index.html") . toFilePath
 
 -- Create custom paths
+-- replace posts/ with blog/ in path 
 route $ gsubRoute "posts/" (const "blog/")
 ```
 
@@ -164,6 +165,8 @@ create ["archive.html"] $ do
 </article>
 ```
 
+the `$date$`, etc. is replaced by that field from the `postCtx`
+
 -----
 
 # Delights and hardships for the novice Haskeller
@@ -190,7 +193,7 @@ create ["archive.html"] $ do
 - separation of templates, content, and logic
   - allows `cabal run site watch` to rebuild on changes to templates and content
 <!-- pause -->
-- super declarative and pipeliny at first glance
+- super declarative and pipeline-y at first glance
 <!-- pause -->
 ```haskell
 match "posts/*" $ do
@@ -244,6 +247,37 @@ match "posts/*" $ do
 
 ## Hole-Driven Development (HDD) to the rescue
 
+```haskell
+match "hole/*" $ do
+  route idRoute
+  compile $ pandocCompiler >>= _hole
+```      
+
+-----
+
+## Hole-Driven Development (HDD) to the rescue
+
+```haskell
+ • Found hole: _hole :: Item String -> Compiler (Item a0)
+      Where: ‘a0’ is an ambiguous type variable
+      Or perhaps ‘_hole’ is mis-spelled, or not in scope
+    • In the second argument of ‘(>>=)’, namely ‘_hole’
+      In the second argument of ‘($)’, namely ‘pandocCompiler >>= _hole’
+      In a stmt of a 'do' block: compile $ pandocCompiler >>= _hole
+    • Relevant bindings include
+        siteCtx :: Context String (bound at site.hs:18:7)
+        copyrightYearsCtx :: Context String (bound at site.hs:17:3)
+        main :: IO () (bound at site.hs:15:1)
+      Valid hole fits include
+        relativizeUrls :: Item String -> Compiler (Item String)
+          (imported from ‘Hakyll’ at site.hs:5:1-13
+           (and originally defined in ‘Hakyll.Web.Html.RelativizeUrls’))
+        renderPandoc :: Item String -> Compiler (Item String)
+          (imported from ‘Hakyll’ at site.hs:5:1-13
+           (and originally defined in ‘Hakyll.Web.Pandoc’))
+        ...
+```
+
 _____
 
 # How it works under the hood
@@ -255,8 +289,8 @@ _____
 ```haskell
 -- Rules is the main configuration monad
 main :: IO ()
-main = hakyll $ do  -- This is the Rules monad
-    match "images/*" $ do
+main = hakyll $ do  
+    match "images/*" $ do -- This is the Rules monad
         route idRoute
         compile copyFileCompiler
 ```
@@ -299,7 +333,7 @@ compile $ pandocCompiler
 - Responsible for actual content transformation
 - Handles dependencies between items
 - Manages content loading and saving
-- Uses monadic composition (>>=) for processing chains
+- Uses bind (`>>=`) for processing chains
 
 ---
 
@@ -338,8 +372,6 @@ fmap :: (a -> b) -> Item a -> Item b
 ```
 
 - Container for content being processed
-- Carries both content and identifier
-- Functorial nature allows easy transformation
 - Essential for composition in the Compiler monad
 
 ---
@@ -348,22 +380,17 @@ fmap :: (a -> b) -> Item a -> Item b
 
 ```haskell
 -- Transform the content directly
+-- withItemBody :: (String -> String) -> Item String -> Item String
 compile $ getResourceBody
     >>= withItemBody (replace "foo" "bar")
 
--- Use functorial properties
-compile $ do
-    content <- getResourceString
-    -- Apply a transformation to content only
-    return $ fmap (replaceAll "foo" (const "bar")) content
-    
 -- Create items from scratch
 makeItem :: a -> Compiler (Item a)
 ```
 
 ---
 
-## The Context Type
+## The Context Monoid
 
 ```haskell
 -- A Context provides fields for templates
@@ -372,12 +399,10 @@ type Context a = String -> [String] -> Item a -> Compiler String
 
 - Central to template rendering
 - Maps field names to content values
-- Combines multiple field providers
-- Often confusing for beginners
 
 ---
 
-## The Context Type: Common Fields
+## The Context Monoid: Common Fields
 
 ```haskell
 -- Default context provides basic fields
@@ -401,7 +426,7 @@ postCtx = dateField "date" "%B %e, %Y"
 
 ---
 
-## The Context Type: Custom Fields
+## The Context Monoid: Custom Fields
 
 ```haskell
 -- Create a custom field
@@ -434,9 +459,8 @@ fromCapture :: Pattern -> String -> Identifier
 ```
 
 - Represents a resource in the site
-- Usually based on file paths
 - Used for targeting and dependencies
-- Core to the build system's dependency tracking
+- Dependency tracking
 
 ---
 
@@ -483,5 +507,9 @@ loadSnapshot :: Identifier -> String -> Compiler (Item a)
 - Key for building archive pages, RSS feeds, etc.
 - Critical for cross-referencing content
 
----
+
+-----
+
+# Interactive Demo
+
 
