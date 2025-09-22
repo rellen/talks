@@ -7,12 +7,16 @@ theme:
   name: light
   override:
     default:
+      margin:
+        percent: 8
       colors:
         background: "edd1b0"
-      font_size: 5
     code:
+      padding:
+        horizontal: 1
       minimum_margin: 
         percent: 1
+      theme_name: base16-ocean.dark
 
 ---
 
@@ -36,20 +40,21 @@ theme:
 
 -----
 
-## A journey into ambitious, multi-faceted software
+# A developer's journey into ambitious, multi-faceted software
 
 <!-- incremental_lists: true -->
 <!-- list_item_newlines: 2 -->
+<!-- pause -->
 
-### Year 1-2
+## Elixir: year 1-2
 
 - Building software for the edge
 - "Collectors" moving data from A to B
 - `GenServer`, `Supervisor`, `Application`
-- no HTTP or SQL in sight
+- no HTML, JSON, or SQL in sight
 
 
-### Year 3+
+## Elixir: year 3+
 
 - persistence
 - third-party integrations
@@ -68,11 +73,15 @@ API <-> ? <-> Third-party APIs
 ## Code organsation
 
 <!-- incremental_lists: true -->
+
+<!-- pause -->
+### Asking myself 
 - Where should I put this code ...?
 - How can I introduce this cross-cutting concern ...? 
 
-<!-- new_lines: 2 -->
+<!-- new_lines: 1 -->
 
+### What I'm really asking
 - ... in a way that keeps the codebase organised ...?
 - ... in a way that is consistent ...?
 - ... so it works with all the other cross-cutting concerns ...?
@@ -80,8 +89,9 @@ API <-> ? <-> Third-party APIs
 
 <!-- new_lines: 2 -->
 
-- ... that I won't forget to do each time under a deadline ...?
-- ... and is easy for others to understand and maintain ...?
+### What I'm really asking
+- ... that I won't "forget" to do each time under a deadline?
+- ... and is easy for others to find, understand, and maintain?
 
 
 -----
@@ -107,27 +117,93 @@ Ash provides _an_ answer to my questions...
 
 _____
 
+# A place for everything and everything in its place
+
+![image:width:80%](images/shadow-board.jpg)
+<!-- alignment: center -->
+_[1]_      
+
+_____
+
+# A place for everything and everything in its place
+
+<!-- pause -->
+Two workspace/workplace organisation terms come to mind...
+
+<!-- list_item_newlines: 2 -->
+<!-- incremental_lists: true -->
+- Mise en place
+- 5S
+
+_____
+
 
 ## Mise en place - [mi zɑ̃ ˈplas]
 
+_putting in place_ / _gathering_
 
-<!-- column_layout: [2, 2] -->
+
+<!-- column_layout: [1, 1] -->
 <!-- column: 0 -->
 
 ![image:width:100%](images/mise-en-place-hot-station.jpg)
 <!-- alignment: right -->
-Charles Haynes - [1]
+_[2]_
 
 
 <!-- column: 1 -->
 
 ![image:width:100%](images/mise-en-place-bowls.jpg)
 <!-- alignment: right -->
-Shaun Tilburg - [2]
+_[3]_
 
 <!-- reset_layout -->
 
+_https://en.wikipedia.org/wiki/Mise_en_place_
+
 -----
+
+
+## 5S - workplace organisation method
+
+Originating from Japanese JIT manufacturing
+
+<!-- column_layout: [4, 9] -->
+
+<!-- pause -->
+<!-- column: 1 -->
+![image:width:90%](images/resource-corner-5s.jpg)
+<!-- alignment: center -->
+_[4]_      
+
+
+<!-- column: 0 -->
+<!-- alignment: left -->
+<!-- pause -->
+
+- seiri (整理)
+- seiton (整頓)
+- seisō (清掃)
+- seiketsu (清潔)
+- shitsuke (躾)
+
+<!-- new_lines: 1 -->
+
+<!-- pause -->
+
+- sort
+- set in order
+- shine
+- standardise
+- sustain
+
+
+<!-- reset_layout -->
+<!-- alignment: center -->
+https://en.wikipedia.org/wiki/5S_(methodology)
+_____
+
+_____
 
 ## Mise en place - edge Collectors
 
@@ -135,51 +211,277 @@ Shaun Tilburg - [2]
 We have our ingredients in place from OTP and the Elixir standard library:
 <!-- list_item_newlines: 2 -->
 <!-- pause -->
-- GenServer
-- Supervisor
-- Application
+- `GenServer`
+- `Supervisor`
+- `Application`
       
 _____
 
+## Mise en place - Ash
 
-## 5S
-
-![image:width:100%](images/resource-corner-5s.jpg)
-<!-- alignment: right -->
-Shaun Tilburg - [2]
+<!-- new_lines: 2 -->
+Resources, actions, and cross-cutting concerns
+<!-- list_item_newlines: 2 -->
+<!-- pause -->
+- Resources and actions
+- 
 
 _____
 
-```d2 +render +width:40%
-my_table: {
-  shape: sql_table
-  id: int {constraint: primary_key}
-  last_updated: timestamp with time zone
-}
+
+### Resources and actions
+
+The nouns and verbs of the system
+
+_____
+
+### Resource
+
+```elixir
+defmodule Post do
+  use Ash.Resource, data_layer: AshPostgres.DataLayer
+
+  attributes do
+    uuid_primary_key :id
+
+    attribute :title, :string, allow_nil?: false
+    attribute :content, :string, allow_nil?: false
+    attribute :published_at, :utc_datetime, allow_nil?: true
+
+    timestamps()
+  end
+end
 ```
 
-___
+_____
+
+### Actions
+
+```elixir
+defmodule Post do
+  actions do
+    default: [:read]
+
+    create :create_draft do
+      accept [:title, :content] 
+    end
+  end
+end
+```
+
+
+_____
+
+
+### Actions
+
+```elixir {9-11|1-13}
+defmodule Post do
+  actions do
+    default: [:read]
+
+    create :create_draft do
+      accept [:title, :content] 
+    end
+
+    update :publish do
+      change set_attribute(:published_at, expr(now()))
+    end
+  end
+end
+```
+
+_____
+
+### Actions - validate input/pre-conditions
+
+```elixir {10-11|1-15}
+defmodule Post do
+  actions do
+    default: [:read]
+
+    create :create_draft do
+      accept [:title, :content] 
+    end
+
+    update :publish do
+      validate absent(:published_at)
+
+      change set_attribute(:published_at, expr(now()))
+    end
+  end
+end
+```
+_____
+
+### But `Post`s need authors...
+
+```elixir
+defmodule MyApp.User do
+  use Ash.Resource, data_layer: AshPostgres.DataLayer
+
+  attributes do
+    uuid_primary_key :id
+
+    attribute :name, :string, allow_nil?: false
+  end
+end
+```
+
+
+_____
+
+### Relationships 
+
+```elixir 
+defmodule Post do
+
+  create :create_draft do
+    accept [:title, :content] 
+  end
+
+end
+```
+
+_____
+
+### Relationships 
+
+```elixir {9-11|6}
+defmodule Post do
+
+  create :create_draft do
+    accept [:title, :content] 
+
+    change relate_actor(:author)
+  end
+
+  relationships do
+    belongs_to :author, MyApp.User, allow_nil?: false 
+  end
+end
+```
+
+
+_____
+
+### Relationships 
+
+```elixir 
+defmodule MyApp.User do
+  relationships do
+    has_many :posts, MyApp.Post, allow_nil?: true 
+  end
+end
+```
+_____
+
+### Fancy relationships 
+
+```elixir {5-11}
+defmodule MyApp.User do
+  relationships do
+    has_many :posts, MyApp.Post, allow_nil?: true 
+
+    has_one :first_post, MyApp.Post do
+      allow_nil?: true
+
+      filter (not(is_nil(published_at)))
+
+      sort published_at: :asc
+    end
+  end
+end
+```
+
+_____
+
+### Authorization 
+
+```elixir 
+defmodule Post do
+  actions do
+    update :change_title do
+      accept [:title] 
+    end
+  end
+end
+```
+
+_____
+
+### Authorization - policies
+
+```elixir {8-17|9-11|13-16}
+defmodule Post do
+  actions do
+    update :change_title do
+      accept [:title] 
+    end
+  end
+
+  policies do
+    policy action_type(:update) do
+      authorize_if relates_to_actor_via([:user])
+    end
+
+    policy action_type(:read) do
+      authorize_if relates_to_actor_via([:user])
+      authorize_if expr(not(is_nil(published_at)))
+    end
+  end
+end
+```
+_____
+
+### Derived data - calculations
+
+```elixir
+defmodule Post do
+  attributes do
+    attribute :published_at, :utc_datetime, allow_nil?: true
+  end
+end
+```
+
+_____
+
+### Derived data - calculations
+
+```elixir {1-14|6-10}
+defmodule Post do
+  attributes do
+    attribute :published_at, :utc_datetime, allow_nil?: true
+  end
+
+  calculations do
+    calculate :status, :atom,
+       expr(if is_nil(published_at),
+         do: :draft, else: :published)
+  end
+end
+```
+
+____
 
 # Image attributions
 
-- [1] Hot station
+- [4] Shadow board
+  - https://upload.wikimedia.org/wikipedia/commons/9/98/Papan_Bayangan_%28Shadow_Board%29.jpg
+  - Encik Tekateki, CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0> via Wikimedia Commons
+<!-- new_lines: 1 -->
+- [2] Hot station
   - https://www.flickr.com/photos/haynes/500435491,
   - Charles Haynes, CC BY-SA 2.0, https://commons.wikimedia.org/w/index.php?curid=35488828
 <!-- new_lines: 1 -->
-- [2] Ingredients
+- [3] Ingredients
   - https://unsplash.com/photos/a-bunch-of-bowls-filled-with-different-types-of-food-3GArfxm0p9M
   - Shaun Tilburg
-<!-- new_lines: 1 -->
-- [3] Shadow board
-  - https://upload.wikimedia.org/wikipedia/commons/9/98/Papan_Bayangan_%28Shadow_Board%29.jpg
-  - Encik Tekateki, CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0> via Wikimedia Commons
 
-___
-
+_____
 
 # Image attributions
 
 - [4] Resource corner
   - https://commons.wikimedia.org/wiki/File:Resource_corner_5S_Safety_close-up_Scanfil_Sieradz.jpg
   - Adrian Grycuk, CC BY-SA 3.0 PL https://creativecommons.org/licenses/by-sa/3.0/pl/deed.en, via Wikimedia Commons
-<!-- new_lines: 1 -->

@@ -61,6 +61,17 @@ speaker_notes:
   # Whether to always publish speaker notes even when `--publish-speaker-notes` is not set.
   always_publish: false
 
+transition:
+  # how long the transition should last.
+  duration_millis: 250
+
+  # how many frames should be rendered during the transition
+  frames: 12
+
+  # the animation to use
+  animation:
+    style: fade
+
 bindings:
   # the keys that cause the presentation to move forwards.
   next: ["l", "j", "<right>", "<page_down>", "<down>", " "]
