@@ -217,28 +217,21 @@ We have our ingredients in place from OTP and the Elixir standard library:
       
 _____
 
-## Mise en place - Ash
+## Mise en place - Ash ingredients
 
 <!-- new_lines: 2 -->
 Resources, actions, and cross-cutting concerns
 <!-- list_item_newlines: 2 -->
 <!-- pause -->
-- Resources and actions
-- 
+The ingredients we have gathered are Ash's declarative DSL
 
 _____
 
-
-### Resources and actions
-
-The nouns and verbs of the system
-
-_____
 
 ### Resource
 
 ```elixir
-defmodule Post do
+defmodule MyApp.Blog.Post do
   use Ash.Resource, data_layer: AshPostgres.DataLayer
 
   attributes do
@@ -257,8 +250,8 @@ _____
 
 ### Actions
 
-```elixir
-defmodule Post do
+```elixir {1-20|2-8|11-15|16-20}
+defmodule MyApp.Blog.Post do
   actions do
     default: [:read]
 
@@ -267,6 +260,17 @@ defmodule Post do
     end
   end
 end
+
+Post
+|> Ash.Changeset.for_create(:create_draft,
+    %{title: "Title", content: "Some content"},
+    actor: current_user)
+|> Ash.create!()
+
+Post
+|> Ash.Query.for_read(:read, actor: current_user)
+|> Ash.Query.filter(expr(published_at < ago(30, :day)))
+|> Ash.create!()
 ```
 
 
@@ -275,8 +279,32 @@ _____
 
 ### Actions
 
+```elixir {1-17|9-11|13-15}
+defmodule MyApp.Blog.Post do
+  actions do
+    default: [:read]
+
+    create :create_draft do
+      accept [:title, :content] 
+    end
+
+    read :drafts do
+      filter expr(is_nil(:published_at))
+    end
+
+    update :publish do
+      change set_attribute(:published_at, expr(now()))
+    end
+  end
+end
+```
+
+_____
+
+### Actions
+
 ```elixir {9-11|1-13}
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     default: [:read]
 
@@ -291,12 +319,13 @@ defmodule Post do
 end
 ```
 
+
 _____
 
 ### Actions - validate input/pre-conditions
 
 ```elixir {10-11|1-15}
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     default: [:read]
 
@@ -317,7 +346,7 @@ _____
 ### But `Post`s need authors...
 
 ```elixir
-defmodule MyApp.User do
+defmodule MyApp.Accounts.User do
   use Ash.Resource, data_layer: AshPostgres.DataLayer
 
   attributes do
@@ -334,41 +363,51 @@ _____
 ### Relationships 
 
 ```elixir 
-defmodule Post do
-
-  create :create_draft do
-    accept [:title, :content] 
+defmodule MyApp.Blog.Post do
+  actions do
+    create :create_draft do
+      accept [:title, :content] 
+    end
   end
-
 end
 ```
 
 _____
 
-### Relationships 
+### Relationships - relational data
 
-```elixir {9-11|6}
-defmodule Post do
+```elixir {9-11|6|14|15-17|19-22}
+defmodule MyApp.Blog.Post do
+  actions do
+    create :create_draft do
+      accept [:title, :content] 
 
-  create :create_draft do
-    accept [:title, :content] 
-
-    change relate_actor(:author)
+      change relate_actor(:author)
+    end
   end
-
   relationships do
-    belongs_to :author, MyApp.User, allow_nil?: false 
+    belongs_to :author, MyApp.Accounts.User, allow_nil?: false 
   end
 end
+
+> some_post = Ash.get!("post_id", actor: :admin)  
+   %MyApp.Blog.Post{
+     author: %Ash.NotLoaded{}
+   }
+
+> Ash.load(some_post, [:author], actor: :admin)  
+   %MyApp.Blog.Post{
+     author: %{MyApp.Accounts.User{name: "Brooklyn Bloggs"}}
+   }
 ```
 
 
 _____
 
-### Relationships 
+### Relationships - relational data
 
 ```elixir 
-defmodule MyApp.User do
+defmodule MyApp.Accounts.User do
   relationships do
     has_many :posts, MyApp.Post, allow_nil?: true 
   end
@@ -379,11 +418,11 @@ _____
 ### Fancy relationships 
 
 ```elixir {5-11}
-defmodule MyApp.User do
+defmodule MyApp.Accounts.User do
   relationships do
-    has_many :posts, MyApp.Post, allow_nil?: true 
+    has_many :posts, MyApp.Blog.Post, allow_nil?: true 
 
-    has_one :first_post, MyApp.Post do
+    has_one :first_post, MyApp.Blog.Post do
       allow_nil?: true
 
       filter (not(is_nil(published_at)))
@@ -462,7 +501,246 @@ defmodule Post do
 end
 ```
 
+----
+
+## Mise en place - Ash ingredients
+
+
+<!-- pause -->
+- resources
+- actions
+- validations
+- relationships
+- authorisation
+- calculations
+
+<!-- pause -->
+Not to mention
+
+<!-- incremental_lists: true -->
+- aggregates
+- identities
+- multi-tenancy
+- notifiers
+- pubsub
+- ...
+
+
+----
+
+## Mise en place - making a meal
+
+----
+
+### Code interfaces
+
+```elixir 
+defmodule Post do
+  actions do
+    create :create_draft do
+      accept [:title, :content] 
+
+      change relate_actor(:author)
+    end
+  end
+```
+
+----
+
+### Code interfaces
+
+```elixir {1-20|10-12|15}
+defmodule Post do
+  actions do
+    create :create do
+      accept [:title, :content] 
+
+      change relate_actor(:author)
+    end
+  end
+
+  code_interface do
+    define :create_draft, :create, args: [:title, :content]
+  end
+end
+
+Post.create_draft("Title", "Some content", actor: current_user)
+```
+_____
+
+### Domains - an essential ingredient ignored until now
+
+<!-- pause -->
+Domains: bounded contexts with the dial turned up to 11
+<!-- pause -->
+
+```elixir {1-20|4-10|8|13}
+defmodule MyApp.Blog do
+  use Ash.Domain, ...
+
+  resources do
+    resource MyApp.Blog.Post do
+      define :create_draft, :create
+      define :list_posts, :read
+      define :find_post, :read, get_by: :id
+    end
+  end
+end
+
+MyApp.Blog.find_post!("some_post_id", ...)
+```
+
+<!-- pause -->
+<!-- new_lines: 1 -->
+Domains convinced me that Ash is an answer to my code organisation concerns
+_____
+
+
+## Mise en place - the next level of Ash ingredients
+
+<!-- pause -->
+Ash lets us to customise our own ingredients
+
+_____
+
+### Derived data - function calculation
+
+```elixir {7-10}
+defmodule Post do
+  attributes do
+    attribute :title, :string, allow_nil?: false
+  end
+
+  calculations do
+    calculate :slug, :string,
+      fn records, _ctx ->
+        Enum.map(records, &slugify(&1.title))
+      end
+  end
+end
+```
+
+_____
+
+### Actions - change modules
+
+```elixir {1-20, 11-14}
+defmodule Post do
+  actions do
+    default: [:read]
+
+    create :create_draft do
+      accept [:title, :content] 
+    end
+
+    update :publish do
+      change set_attribute(:published_at, expr(now()))
+      change Post.Changes.ScheduleEmailBlast
+    end
+  end
+end
+```
+
+_____
+
+### Actions - change modules
+
+```elixir {1-20,5}
+defmodule Post.Changes.ScheduleEmailBlast do
+  use Ash.Resource.Change
+
+  def change(changeset, _opts, context) do
+    Ash.Changeset.after_action(fn _changeset, record ->
+      result = 
+        EmailMessage
+        |> Ash.Changeset.for_create(...record, ...)
+        |> Ash.create()
+
+      case result do
+        {:ok, _ } -> {:ok, record}
+        {:error, _} -> {:error, ???}
+      end
+    end)
+  end
+end
+```
 ____
+
+## How Ash and its practices support a 5S process
+
+-----
+
+### Sort
+
+<!-- pause -->
+Remove unnecessary items
+
+<!-- pause -->
+Ash:
+<!-- pause -->
+- declarative DSL
+- (sensible) defaults
+  
+____
+
+### Set in order
+
+<!-- pause -->
+Put necessary items in the optimal place
+
+<!-- pause -->
+Ash:
+<!-- incremental_lists: true -->
+- (almost) everything about a resource is in, or hangs off, the module
+- a logical order to the DSL
+- formatter, code completion
+- a naming convention (CRUD, actions, changes, hooks etc)
+
+____
+
+### Shine
+
+<!-- pause -->
+Cleaning and inspecting the workspace on a regular basis
+<!-- pause -->
+Ash:
+<!-- incremental_lists: true -->
+- we can see when inline, imperative code is building up
+- we can see more easily where there might be opportunities for reuse
+- formatter
+- lean into defaults to reduce noise
+
+____
+
+### Standardize
+
+<!-- pause -->
+Establish procedures and schedules to ensure the repetiton of the first three S
+
+<!-- pause -->
+Ash:
+<!-- pause -->
+- DSL
+- patterns / "the Ash way to do x" - e.g. action lifecycle hooks, wrapping APIs
+____
+
+### Sustain
+
+<!-- pause -->
+Ensure that 5S is followed
+
+<!-- pause -->
+Ash: 
+<!-- pause -->
+- not so much the framework itself, but... 
+<!-- pause -->
+- training
+- doc improvements
+- taking feedback and improving
+- encouraging/supporting community extensions
+- ...
+
+_____
 
 # Image attributions
 
