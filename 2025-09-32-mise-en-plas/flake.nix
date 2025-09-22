@@ -37,6 +37,7 @@
             buildInputs =
               [
                 presenterm
+                d2
               ]
               ++ optional stdenv.isLinux inotify-tools;
           };
