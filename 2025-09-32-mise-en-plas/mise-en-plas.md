@@ -183,7 +183,13 @@ _[4]_
 https://en.wikipedia.org/wiki/5S_(methodology)
 _____
 
+# Mise en place
+
+<!-- new_lines: 2 -->
+<!-- pause -->
+Let's explore how a culinary philosophy applies to code
 _____
+
 
 ## Mise en place - edge Collectors
 
@@ -498,7 +504,7 @@ some_post
 
 ----
 
-## Mise en place - Ash ingredients
+## Ash ingredients
 
 <!-- column_layout: [1, 3, 4, 1] -->
 <!-- column: 1 -->
@@ -532,7 +538,11 @@ All of these are defined declaratively, with consistent options, e.g. `load`, an
 
 ----
 
-## Mise en place - making a meal
+## Making a meal with Ash
+
+<!-- new_lines: 2 -->
+<!-- pause -->
+Given our ingredients, how can Ash help us organise our code?
 
 ----
 
@@ -567,7 +577,7 @@ defmodule MyApp.Blog.Post do
     define :create_draft, :create, args: [:title, :content]
   end
 end
-
+# for instance, in a Live View
 Post.create_draft("Title", "Some content", actor: current_user)
 ```
 _____
@@ -590,7 +600,7 @@ defmodule MyApp.Blog do
     end
   end
 end
-
+# for instance, in a Phoenix Controller
 MyApp.Blog.find_post!("some_post_id", ...)
 ```
 
@@ -604,6 +614,9 @@ _____
 
 <!-- pause -->
 Ash lets us to customise our own ingredients
+<!-- pause -->
+<!-- new_lines: 1 -->
+We can break out of declarative mode and add pure Elixir code
 
 _____
 
@@ -701,7 +714,7 @@ ____
 
 <!-- new_lines: 1 -->
 <!-- pause -->
-We just saw a change module
+We just saw a `change` module
 <!-- new_lines: 1 -->
 <!-- pause -->
 Module implementations can be made for other features:
@@ -716,83 +729,210 @@ Module implementations can be made for other features:
 <!-- pause -->
 An opportunity for code reuse
 
+_____
+
+## Mise en place - the next level of Ash ingredients
+
+<!-- pause -->
+Ash allows us to implement customisations of our code ingredients
+
+<!-- new_lines: 1 -->
+<!-- pause -->
+But there's always another level
+
+_____
+
+## The next, next level of Ash ingredients
+
+<!-- new_lines: 1 -->
+<!-- pause -->
+Ash's declarative style is powered by Spark: https://github.com/ash-project/spark
+<!-- new_lines: 1 -->
+<!-- pause -->
+Spark is a DSL builder, applicable to any Elixir DSL use-case, not just Ash
+<!-- new_lines: 1 -->
+<!-- pause -->
+<!-- incremental_lists: true -->
+<!-- list_item_newlines: 2 -->
+- Spark DSL programs (like an Ash application) are data structures defined by a schema
+- we can add and modify sections and entities in the DSL with extensions and transformers
+
 ____
 
-## How Ash and its practices support a 5S process
+# How Ash and its practices support a 5S process
+
+<!-- new_lines: 1 -->
+<!-- pause -->
+Ash's declarative style is powered by Spark: https://github.com/ash-project/spark
 
 -----
 
-### Sort
+### A Spark extension
+
+The following examples are taken from https://hexdocs.pm/ash/writing-extensions.html
 
 <!-- pause -->
-Remove unnecessary items
+```elixir
+defmodule MyApp.Extensions.Base do
+  use Spark.Dsl.Extension, transformers: [MyApp.Extensions.Base.AddTimestamps]
+end
+```
 
+-----
+
+### A Spark extension
+
+```elixir
+defmodule MyApp.Extensions.Base do
+  @base %Spark.Dsl.Section{
+    name: :base,
+    describe: "Configure the behavior of our base extension.",
+    examples: [ "base do timestamps? false end" ],
+    schema: [
+      timestamps?: [
+        type: :boolean,
+        doc: "Set to false to skip adding timestamps",
+        default: true
+      ]
+    ]
+  }
+
+  use Spark.Dsl.Extension,
+    transformers: [MyApp.Extensions.Base.AddTimestamps],
+    sections: [@base]
+end
+```
+_____
+
+### A Spark extension - transformer
+
+```elixir
+defmodule MyApp.Extensions.Base.AddTimestamps do
+  use Spark.Dsl.Transformer
+  alias Spark.Dsl.Transformer
+
+  def transform(dsl_state) do
+    dsl_state
+    # Ash.Resource.Builder has utilities for extending resources
+    |> Ash.Resource.Builder.add_new_create_timestamp(
+      :inserted_at)
+    |> Ash.Resource.Builder.add_new_update_timestamp(
+      :updated_at)
+  end
+end
+```
+_____
+
+### A Spark extension - transformer
+
+```elixir
+defmodule MyApp.Tweet do
+  use Ash.Resource,
+    extensions: [MyApp.Extensions.Base]
+
+  base do
+    # And you can configure it like so
+    timestamps? false
+  end
+end
+````
+_____
+
+## Ash extensions
+
+<!-- new_lines: 1 -->
 <!-- pause -->
-Ash:
+Ash extensions, powered by Spark, help fulfil the tagline:
+<!-- new_lines: 1 -->
 <!-- pause -->
-- declarative DSL
-- (sensible) defaults
-  
-____
-
-### Set in order
-
+<!-- alignment: center -->
+_Model your domain, derive the rest_
+<!-- new_lines: 1 -->
 <!-- pause -->
-Put necessary items in the optimal place
-
-<!-- pause -->
-Ash:
-<!-- incremental_lists: true -->
-- (almost) everything about a resource is in, or hangs off, the module
-- a logical order to the DSL
-- formatter, code completion
-- a naming convention (CRUD, actions, changes, hooks etc)
-
-____
-
-### Shine
-
-<!-- pause -->
-Cleaning and inspecting the workspace on a regular basis
-<!-- pause -->
-Ash:
-<!-- incremental_lists: true -->
-- we can see when inline, imperative code is building up
-- we can see more easily where there might be opportunities for reuse
-- formatter
-- lean into defaults to reduce noise
-
-____
-
-### Standardize
-
-<!-- pause -->
-Establish procedures and schedules to ensure the repetiton of the first three S
-
-<!-- pause -->
-Ash:
-<!-- pause -->
-- DSL
-- patterns / "the Ash way to do x" - e.g. action lifecycle hooks, wrapping APIs
-____
-
-### Sustain
-
-<!-- pause -->
-Ensure that 5S is followed
-
-<!-- pause -->
-Ash: 
-<!-- pause -->
-- not so much the framework itself, but... 
-<!-- pause -->
-- training
-- doc improvements
-- taking feedback and improving
-- encouraging/supporting community extensions
-- ...
+<!-- alignment: left -->
+The Ash open source ecosystem is based around useful extensions 
 
 _____
+
+### AshJsonAPI example
+
+<!-- pause -->
+Add JSON:API routes to your application: https://github.com/ash-project/ash_json_api
+<!-- pause -->
+
+<!-- column_layout: [5, 4] -->
+<!-- column: 0 -->
+```elixir
+defmodule MyApp.Blog do
+  use Ash.Domain, ...
+
+  alias MyApp.Blog.Post
+
+  resources do
+    resource Post do
+      define :create_draft, :create
+      define :list_posts, :read
+    end
+  end
+
+  json_api do
+    routes do
+      base_route "/posts", Post do
+        get :read
+        index :read
+        post :create
+      end
+    end
+  end
+end
+
+```
+
+<!-- pause -->
+<!-- column: 1 -->
+```bash
+curl https://example.com/posts/post-id
+
+{
+  "data": {
+    "attributes": {
+      "published_at": "2025-09-23T14:30:00Z",
+      "title": "First Post!",
+      "content": "...",
+      "slug": "first-post",
+      ...
+    },
+    "id": "post-id",
+    "relationships": {...}
+  },
+  "included": [...],
+  "meta": {...}
+
+```
+____
+
+
+### Ash extensions
+
+<!-- column_layout: [5, 4] -->
+<!-- column: 1 -->
+![image:width:100%](images/ash-get-started.png)
+<!-- alignment: right -->
+https://ash-hq.org/#get-started
+
+<!-- column: 0 -->
+<!-- new_lines: 2 -->
+<!-- incremental_lists: true -->
+<!-- list_item_newlines: 2 -->
+- AshAuthentication - multi-strategy authentication
+- AshOban - scheduled and background jobs with Oban/ObanPro
+- AshGraphQL - turn actions into Absinthe queries and mutations
+- AshPaperTrail - versioning and auditing for resource changes
+- AshTypeScript - type-safe RPC for TypeScript applications
+- ...
+
+
+____
 
 # Image attributions
 
