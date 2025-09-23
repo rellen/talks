@@ -20,26 +20,6 @@ theme:
 
 ---
 
-# Summary
-
-<!-- column_layout: [3, 2] -->
-<!-- column: 0 -->
-
-
-
-<!-- column: 1 -->
-
-
-<!-- reset_layout -->
-
------
-
-# Summary
-
-<!-- pause -->
-
------
-
 # A developer's journey into ambitious, multi-faceted software
 
 <!-- incremental_lists: true -->
@@ -220,16 +200,22 @@ _____
 ## Mise en place - Ash ingredients
 
 <!-- new_lines: 2 -->
-Resources, actions, and cross-cutting concerns
-<!-- list_item_newlines: 2 -->
-<!-- pause -->
 The ingredients we have gathered are Ash's declarative DSL
+<!-- pause -->
+<!-- new_lines: 2 -->
+Resources, actions, cross-cutting concerns, and the pieces they're made of
+<!-- pause -->
+<!-- new_lines: 2 -->
+Let's see some of the ingredients we can work with
 
 _____
 
 
 ### Resource
 
+The nouns of our system
+<!-- pause -->
+<!-- new_lines: 2 -->
 ```elixir
 defmodule MyApp.Blog.Post do
   use Ash.Resource, data_layer: AshPostgres.DataLayer
@@ -250,6 +236,8 @@ _____
 
 ### Actions
 
+The verbs of our system
+<!-- pause -->
 ```elixir {1-20|2-8|11-15|16-20}
 defmodule MyApp.Blog.Post do
   actions do
@@ -438,7 +426,7 @@ _____
 ### Authorization 
 
 ```elixir 
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     update :change_title do
       accept [:title] 
@@ -452,7 +440,7 @@ _____
 ### Authorization - policies
 
 ```elixir {8-17|9-11|13-16}
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     update :change_title do
       accept [:title] 
@@ -476,7 +464,7 @@ _____
 ### Derived data - calculations
 
 ```elixir
-defmodule Post do
+defmodule MyApp.Blog.Post do
   attributes do
     attribute :published_at, :utc_datetime, allow_nil?: true
   end
@@ -487,8 +475,8 @@ _____
 
 ### Derived data - calculations
 
-```elixir {1-14|6-10}
-defmodule Post do
+```elixir {1-11|6-10|13-16|16|18}
+defmodule MyApp.Blog.Post do
   attributes do
     attribute :published_at, :utc_datetime, allow_nil?: true
   end
@@ -499,13 +487,24 @@ defmodule Post do
          do: :draft, else: :published)
   end
 end
+
+some_post
+|> Ash.Changeset.for_update(:publish, actor: current_user)
+|> Ash.Changeset.update!()
+|> Ash.load!([:status], actor: current_user)
+
+  %MyApp.Blog.Post{status: :published}
 ```
 
 ----
 
 ## Mise en place - Ash ingredients
 
-
+<!-- column_layout: [1, 3, 4, 1] -->
+<!-- column: 1 -->
+<!-- new_lines: 2 -->
+<!-- pause -->
+We've seen:
 <!-- pause -->
 - resources
 - actions
@@ -515,16 +514,21 @@ end
 - calculations
 
 <!-- pause -->
-Not to mention
+Not to mention:
 
 <!-- incremental_lists: true -->
 - aggregates
+- preparations
 - identities
 - multi-tenancy
 - notifiers
 - pubsub
 - ...
 
+<!-- column: 2 -->
+
+<!-- jump_to_middle -->
+All of these are defined declaratively, with consistent options, e.g. `load`, and fit together well
 
 ----
 
@@ -535,7 +539,7 @@ Not to mention
 ### Code interfaces
 
 ```elixir 
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     create :create_draft do
       accept [:title, :content] 
@@ -550,7 +554,7 @@ defmodule Post do
 ### Code interfaces
 
 ```elixir {1-20|10-12|15}
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     create :create do
       accept [:title, :content] 
@@ -606,7 +610,7 @@ _____
 ### Derived data - function calculation
 
 ```elixir {7-10}
-defmodule Post do
+defmodule MyApp.Blog.Post do
   attributes do
     attribute :title, :string, allow_nil?: false
   end
@@ -625,7 +629,7 @@ _____
 ### Actions - change modules
 
 ```elixir {1-20, 11-14}
-defmodule Post do
+defmodule MyApp.Blog.Post do
   actions do
     default: [:read]
 
@@ -645,7 +649,7 @@ _____
 
 ### Actions - change modules
 
-```elixir {1-20,5}
+```elixir {1-20, 5}
 defmodule Post.Changes.ScheduleEmailBlast do
   use Ash.Resource.Change
 
@@ -653,7 +657,7 @@ defmodule Post.Changes.ScheduleEmailBlast do
     Ash.Changeset.after_action(fn _changeset, record ->
       result = 
         EmailMessage
-        |> Ash.Changeset.for_create(...record, ...)
+        |> Ash.Changeset.for_create(:schedule, ...record, ...)
         |> Ash.create()
 
       case result do
@@ -664,6 +668,54 @@ defmodule Post.Changes.ScheduleEmailBlast do
   end
 end
 ```
+
+____
+
+### Actions - change modules
+
+```elixir
+defmodule Post.Changes.ScheduleEmailBlast do
+  use Ash.Resource.Change
+
+  def change(changeset, _opts, context) do
+    Ash.Changeset.after_action(fn _changeset, record ->
+      result = 
+        EmailMessage
+        |> Ash.Changeset.for_create(:schedule, ...record, ...)
+        |> Ash.create()
+
+      case result do
+        {:ok, _ } -> {:ok, record}
+        {:error, _} -> {:error, ???}
+      end
+    end)
+  end
+end
+```
+<!-- pause -->
+This is exactly how builtins, like `set_attribute` are implemented under the hood
+
+____
+
+### Behaviour modules
+
+<!-- new_lines: 1 -->
+<!-- pause -->
+We just saw a change module
+<!-- new_lines: 1 -->
+<!-- pause -->
+Module implementations can be made for other features:
+<!-- new_lines: 1 -->
+<!-- incremental_lists: true -->
+<!-- list_item_newlines: 2 -->
+- calculations
+- validations
+- preparations
+
+<!-- new_lines: 1 -->
+<!-- pause -->
+An opportunity for code reuse
+
 ____
 
 ## How Ash and its practices support a 5S process
@@ -744,7 +796,7 @@ _____
 
 # Image attributions
 
-- [4] Shadow board
+- [1] Shadow board
   - https://upload.wikimedia.org/wikipedia/commons/9/98/Papan_Bayangan_%28Shadow_Board%29.jpg
   - Encik Tekateki, CC BY-SA 4.0 https://creativecommons.org/licenses/by-sa/4.0> via Wikimedia Commons
 <!-- new_lines: 1 -->
