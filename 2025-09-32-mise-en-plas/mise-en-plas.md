@@ -177,7 +177,6 @@ _[4]_
 - standardise
 - sustain
 
-
 <!-- reset_layout -->
 <!-- alignment: center -->
 https://en.wikipedia.org/wiki/5S_(methodology)
@@ -266,7 +265,6 @@ Post
 |> Ash.Query.filter(expr(published_at < ago(30, :day)))
 |> Ash.create!()
 ```
-
 
 _____
 
@@ -617,7 +615,9 @@ Ash lets us to customise our own ingredients
 <!-- pause -->
 <!-- new_lines: 1 -->
 We can break out of declarative mode and add pure Elixir code
-
+<!-- pause -->
+<!-- new_lines: 1 -->
+But these are controlled points of customisation, fitting with the rest of the framework
 _____
 
 ### Derived data - function calculation
@@ -759,13 +759,6 @@ Spark is a DSL builder, applicable to any Elixir DSL use-case, not just Ash
 
 ____
 
-# How Ash and its practices support a 5S process
-
-<!-- new_lines: 1 -->
-<!-- pause -->
-Ash's declarative style is powered by Spark: https://github.com/ash-project/spark
-
------
 
 ### A Spark extension
 
@@ -931,6 +924,31 @@ https://ash-hq.org/#get-started
 - AshTypeScript - type-safe RPC for TypeScript applications
 - ...
 
+____
+
+# Ash ingredients
+
+<!-- new_lines: 1 -->
+<!-- incremental_lists: true -->
+<!-- list_item_newlines: 2 -->
+- declarative DSL with cross-cutting concerns built-in (e.g. relations, validations, calculations, policies) that fit together
+- multiple extension points with progressive levels of code organisational clarity:
+  - expressions
+  - inline functions
+  - behaviour modules (e.g. changes, calculations, preparations)
+- gather ingredients at the meta-level - Spark Extensions
+- extension ecosystem for everything needed to build modern multi-faceted apps
+
+<!-- new_lines: 1 -->
+<!-- alignment: center -->
+<!-- pause -->
+All these properties together is why I say:
+  
+----
+
+<!-- jump_to_middle -->
+<!-- alignment: center -->
+ Ash has a place for everything and everything in its place
 
 ____
 
