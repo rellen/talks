@@ -44,9 +44,7 @@ theme:
 
 ## Code organsation
 
-Web <-> ? <-> Repository 
-
-API <-> ? <-> Third-party APIs
+![image:width:100%](images/application.png)
 
 -----
 
@@ -61,7 +59,7 @@ API <-> ? <-> Third-party APIs
 
 <!-- new_lines: 1 -->
 
-### What I'm really asking
+### really asking
 - ... in a way that keeps the codebase organised ...?
 - ... in a way that is consistent ...?
 - ... so it works with all the other cross-cutting concerns ...?
@@ -69,16 +67,47 @@ API <-> ? <-> Third-party APIs
 
 <!-- new_lines: 2 -->
 
-### What I'm really asking
+### really asking
 - ... that I won't "forget" to do each time under a deadline?
-- ... and is easy for others to find, understand, and maintain?
-
+- ... and is easy for others to find, understand, extend, and maintain?
 
 -----
 
+## Code organsation
+
+<!-- incremental_lists: true -->
+<!-- list_item_newlines: 2 -->
+- Model-View-Controller
+- Phoenix contexts
+  - stacked with libraries and patterns for the concerns (e.g. validation)
+- Commanded
+
+-----
+
+<!-- new_lines: 2 -->
 <!-- alignment: center -->
-<!-- new_lines: 4 -->
-Ash stumbled upon me one day in Surrey Hills, Sydney...
+Ash framework stumbled upon me one day in Surrey Hills, Sydney...
+
+![image:width:100%](images/ash-logo.png)
+
+-----
+
+### Ash framework
+
+<!-- new_lines: 2 -->
+
+<!-- column_layout: [2, 1] -->
+<!-- column: 1 -->
+![image:width:100%](images/ash-logo.png)
+
+<!-- column: 0 -->
+
+<!-- incremental_lists: true -->
+<!-- list_item_newlines: 2 -->
+- a **declarative** _application_ framework for Elixir
+- resource-based: model nouns and verbs of your domain
+- agnostic of UI, API, or persistence layers
+
 
 -----
 
@@ -91,9 +120,15 @@ _https://alembic.com.au/blog/essence-of-ash-framework_
 
 ## Realisation
 
-Ash provides _an_ answer to my questions...
-
-
+<!-- new_lines: 2 -->
+<!-- pause -->
+Ash provided _an_ answer to my questions...
+<!-- new_lines: 2 -->
+<!-- pause -->
+What I wanted was a framework that will help me do things right as my application grows and evolves
+<!-- new_lines: 2 -->
+<!-- pause -->
+A framework that has...
 
 _____
 
@@ -177,9 +212,15 @@ _[4]_
 - standardise
 - sustain
 
+<!-- new_lines: 1 -->
+<!-- pause -->
+Sadly, relating Ash and 5S will have to wait for another time
+
 <!-- reset_layout -->
+<!-- pause -->
 <!-- alignment: center -->
 https://en.wikipedia.org/wiki/5S_(methodology)
+
 _____
 
 # Mise en place
@@ -187,28 +228,43 @@ _____
 <!-- new_lines: 2 -->
 <!-- pause -->
 Let's explore how a culinary philosophy applies to code
+
 _____
 
 
 ## Mise en place - edge Collectors
 
 <!-- new_lines: 2 -->
+<!-- column_layout: [2, 3] -->
+
+<!-- pause -->
+<!-- column: 1 -->
+
+![image:width:100%](images/tree.png)
+
+
+<!-- column: 0 -->
+<!-- alignment: left -->
+<!-- pause -->
 We have our ingredients in place from OTP and the Elixir standard library:
 <!-- list_item_newlines: 2 -->
-<!-- pause -->
+<!-- incremental_lists: true -->
 - `GenServer`
 - `Supervisor`
 - `Application`
       
+<!-- new_lines: 2 -->
+<!-- pause -->
+For lightweight network services, they can take you a long way
 _____
 
-## Mise en place - Ash ingredients
+## Mise en place - multi-faceted apps with Ash
 
 <!-- new_lines: 2 -->
-The ingredients we have gathered are Ash's declarative DSL
+The base ingredients: Ash's declarative DSL (Domain Specific Language)
 <!-- pause -->
 <!-- new_lines: 2 -->
-Resources, actions, cross-cutting concerns, and the pieces they're made of
+Defines resources, actions, cross-cutting concerns, and their component pieces
 <!-- pause -->
 <!-- new_lines: 2 -->
 Let's see some of the ingredients we can work with
@@ -254,16 +310,16 @@ defmodule MyApp.Blog.Post do
   end
 end
 
-Post
+MyApp.BlogPost
 |> Ash.Changeset.for_create(:create_draft,
     %{title: "Title", content: "Some content"},
     actor: current_user)
 |> Ash.create!()
 
-Post
+PostMyApp.BlogPost
 |> Ash.Query.for_read(:read, actor: current_user)
 |> Ash.Query.filter(expr(published_at < ago(30, :day)))
-|> Ash.create!()
+|> Ash.read!()
 ```
 
 _____
@@ -387,7 +443,7 @@ end
      author: %Ash.NotLoaded{}
    }
 
-> Ash.load(some_post, [:author], actor: :admin)  
+> Ash.load!(some_post, [:author], actor: :admin)  
    %MyApp.Blog.Post{
      author: %{MyApp.Accounts.User{name: "Brooklyn Bloggs"}}
    }
@@ -453,11 +509,11 @@ defmodule MyApp.Blog.Post do
 
   policies do
     policy action_type(:update) do
-      authorize_if relates_to_actor_via([:user])
+      authorize_if relates_to_actor_via([:author])
     end
 
     policy action_type(:read) do
-      authorize_if relates_to_actor_via([:user])
+      authorize_if relates_to_actor_via([:author])
       authorize_if expr(not(is_nil(published_at)))
     end
   end
@@ -576,7 +632,7 @@ defmodule MyApp.Blog.Post do
   end
 end
 # for instance, in a Live View
-Post.create_draft("Title", "Some content", actor: current_user)
+MyApp.Blog.Post.create_draft("Title", "Some content", actor: current_user)
 ```
 _____
 
@@ -652,7 +708,7 @@ defmodule MyApp.Blog.Post do
 
     update :publish do
       change set_attribute(:published_at, expr(now()))
-      change Post.Changes.ScheduleEmailBlast
+      change __MODULE__.Changes.ScheduleEmailBlast
     end
   end
 end
@@ -687,7 +743,7 @@ ____
 ### Actions - change modules
 
 ```elixir
-defmodule Post.Changes.ScheduleEmailBlast do
+defmodule MyApp.Blog.Post.Changes.ScheduleEmailBlast do
   use Ash.Resource.Change
 
   def change(changeset, _opts, context) do
@@ -932,10 +988,9 @@ ____
 <!-- incremental_lists: true -->
 <!-- list_item_newlines: 2 -->
 - declarative DSL with cross-cutting concerns built-in (e.g. relations, validations, calculations, policies) that fit together
-- multiple extension points with progressive levels of code organisational clarity:
-  - expressions
-  - inline functions
-  - behaviour modules (e.g. changes, calculations, preparations)
+- multiple extension points with progressive levels of code organisational clarity
+  - do it the Right Way (TM)
+  - seamless retrofit
 - gather ingredients at the meta-level - Spark Extensions
 - extension ecosystem for everything needed to build modern multi-faceted apps
 
