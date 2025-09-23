@@ -1007,6 +1007,13 @@ All these properties together is why I say:
 
 ____
 
+
+<!-- jump_to_middle -->
+<!-- alignment: center -->
+https://github.com/rellen
+____
+
+
 # Image attributions
 
 - [1] Shadow board
